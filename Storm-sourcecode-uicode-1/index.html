@@ -23,7 +23,7 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 storm开发环境的配置请参考：storm源码分析——工具篇
 storm的UI界面的参数解释可以参考http://lbxc.iteye.com/blog/1522318
 storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考https://www.zybuluo.com/yanhealth/note/1429">
-<meta property="og:updated_time" content="2016-04-03T16:46:49.105Z">
+<meta property="og:updated_time" content="2016-04-07T08:49:05.829Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Storm 源码分析——UI界面显示代码分析（上）">
 <meta name="twitter:description" content="#Storm源码分析——UI界面显示代码分析
@@ -110,7 +110,7 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 		</div>
 		
 		<p>#Storm源码分析——UI界面显示代码分析</p>
-<p>storm开发环境的配置请参考：<a href="http://yanjiankang.cn/2016/02/02/Storm-sourcecode-analize-tools/">storm源码分析——工具篇</a></p>
+<p>storm开发环境的配置请参考：<a href="http://yanjiankang.cn/Storm-sourcecode-analize-tools/">storm源码分析——工具篇</a></p>
 <p>storm的UI界面的参数解释可以参考<a href="http://lbxc.iteye.com/blog/1522318" target="_blank" rel="external">http://lbxc.iteye.com/blog/1522318</a></p>
 <p>storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考<a href="https://www.zybuluo.com/yanhealth/note/142919：" target="_blank" rel="external">https://www.zybuluo.com/yanhealth/note/142919：</a><br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/api/v1/cluster/configuration (GET) </span><br><span class="line">/api/v1/cluster/summary (GET)</span><br><span class="line">/api/v1/supervisor/summary (GET)</span><br><span class="line">/api/v1/topology/summary (GET)</span><br><span class="line">/api/v1/topology/:id (GET)</span><br><span class="line">/api/v1/topology/:id/component/:component (GET)</span><br><span class="line">/api/v1/topology/:id/activate (POST)</span><br><span class="line">/api/v1/topology/:id/deactivate (POST)</span><br><span class="line">/api/v1/topology/:id/rebalance/:wait-time (POST)</span><br><span class="line">/api/v1/topology/:id/kill/:wait-time (POST)</span><br></pre></td></tr></table></figure></p>
 <p>这些接口函数的定义主要是在ui/core.clj文件中。下面主要分析UI进程的启动过程和以上接口数据的产生。 </p>
@@ -284,6 +284,10 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 			
 		
 			
+				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/zookeeper/" title="zookeeper">zookeeper<sup>2</sup></a></li>
 			
 		
@@ -292,15 +296,31 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 			
 		
 			
-				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/rtsp/" title="rtsp">rtsp<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/LeetCode/" title="LeetCode">LeetCode<sup>1</sup></a></li>
+				<li><a href="/tags/kafka/" title="kafka">kafka<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/clojure/" title="clojure">clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
 			
 		
 			
@@ -313,26 +333,6 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 		
 			
 				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/gstream/" title="gstream">gstream<sup>1</sup></a></li>
 			
 		
 			

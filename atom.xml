@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yanjiankang.cn/"/>
-  <updated>2016-04-03T16:46:49.105Z</updated>
+  <updated>2016-04-07T08:49:05.829Z</updated>
   <id>http://yanjiankang.cn/</id>
   
   <author>
@@ -20,10 +20,10 @@
     <link href="http://yanjiankang.cn/Storm-sourcecode-uicode-1/"/>
     <id>http://yanjiankang.cn/Storm-sourcecode-uicode-1/</id>
     <published>2016-04-07T08:12:59.865Z</published>
-    <updated>2016-04-03T16:46:49.105Z</updated>
+    <updated>2016-04-07T08:49:05.829Z</updated>
     
     <content type="html">&lt;p&gt;#Storm源码分析——UI界面显示代码分析&lt;/p&gt;
-&lt;p&gt;storm开发环境的配置请参考：&lt;a href=&quot;http://yanjiankang.cn/2016/02/02/Storm-sourcecode-analize-tools/&quot;&gt;storm源码分析——工具篇&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;storm开发环境的配置请参考：&lt;a href=&quot;http://yanjiankang.cn/Storm-sourcecode-analize-tools/&quot;&gt;storm源码分析——工具篇&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;storm的UI界面的参数解释可以参考&lt;a href=&quot;http://lbxc.iteye.com/blog/1522318&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://lbxc.iteye.com/blog/1522318&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考&lt;a href=&quot;https://www.zybuluo.com/yanhealth/note/142919：&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://www.zybuluo.com/yanhealth/note/142919：&lt;/a&gt;&lt;br&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/cluster/configuration (GET) &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/cluster/summary (GET)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/supervisor/summary (GET)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/summary (GET)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id (GET)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id/component/:component (GET)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id/activate (POST)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id/deactivate (POST)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id/rebalance/:wait-time (POST)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/api/v1/topology/:id/kill/:wait-time (POST)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;这些接口函数的定义主要是在ui/core.clj文件中。下面主要分析UI进程的启动过程和以上接口数据的产生。 &lt;/p&gt;
@@ -89,7 +89,8 @@
     <summary type="html">
     
       &lt;p&gt;#Storm源码分析——UI界面显示代码分析&lt;/p&gt;
-&lt;p&gt;storm开发环境的配置请参考：&lt;a href=&quot;http://yanjiankang.cn/2016/02/02/Storm-sourcecode-analize-tools/&quot;&gt;storm源码分析——工具篇&lt;/
+&lt;p&gt;storm开发环境的配置请参考：&lt;a href=&quot;http://yanjiankang.cn/Storm-sourcecode-analize-tools/&quot;&gt;storm源码分析——工具篇&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;s
     
     </summary>
     
@@ -689,13 +690,13 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="Linux配置" scheme="http://yanjiankang.cn/categories/Linux%E9%85%8D%E7%BD%AE/"/>
     
     
+      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
+    
       <category term="Linux" scheme="http://yanjiankang.cn/tags/Linux/"/>
     
       <category term="ubuntu" scheme="http://yanjiankang.cn/tags/ubuntu/"/>
     
       <category term="redhat" scheme="http://yanjiankang.cn/tags/redhat/"/>
-    
-      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
     
   </entry>
   
