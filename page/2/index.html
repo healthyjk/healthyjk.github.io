@@ -1,0 +1,610 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Yan Jiankang&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Jiankang Yan">
+    
+
+    
+    <meta name="description" content="个人学习总结  知识管理  技术总结">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Yan Jiankang's Blog">
+<meta property="og:url" content="http://yanjiankang.cn/page/2/index.html">
+<meta property="og:site_name" content="Yan Jiankang's Blog">
+<meta property="og:description" content="个人学习总结  知识管理  技术总结">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Yan Jiankang's Blog">
+<meta name="twitter:description" content="个人学习总结  知识管理  技术总结">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Yan Jiankang&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Yan Jiankang&#39;s Blog" title="Yan Jiankang&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Yan Jiankang&#39;s Blog">Yan Jiankang&#39;s Blog</a></h1>
+				<h2 class="blog-motto">博学之,审问之,慎思之,明辨之,笃行之</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:yanjiankang.cn">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/07/count_prime/" title="LeetCode刷题--统计质数的方法" itemprop="url">LeetCode刷题--统计质数的方法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Jiankang Yan" target="_blank" itemprop="author">Jiankang Yan</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-07T08:12:59.849Z" itemprop="datePublished"> 发表于 2016-04-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>最近在刷LeetCode，对遇到的一些问题进行记录。</p>
+<h2 id="统计小于n的所有质数问题"><a href="#统计小于n的所有质数问题" class="headerlink" title="统计小于n的所有质数问题"></a><strong>统计小于n的所有质数问题</strong></h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>Description:<br>Count the number of prime numbers less than a non-negative number, n.<br>题目即为统计小于n的所有质数的数目；</p>
+<h3 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h3><p>目前最简单易懂的解法描述为：</p>
+<p><strong>质数不能被1和它本身之外的正整数整除，所以，如果要判断一个数x是不是质数只要看它是否能被2~sqrt(x)间的数整除即可。</strong></p>
+<p>解法的代码如下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">countPrimes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">2</span>; i &lt; n; i += <span class="number">2</span>) &#123;  <span class="comment">// 只考虑奇数</span></span><br><span class="line">        <span class="keyword">if</span> ((i%<span class="number">2</span>==<span class="number">0</span>) || (i%<span class="number">3</span>==<span class="number">0</span>) || (i%<span class="number">5</span>==<span class="number">0</span>) || (i%<span class="number">7</span>==<span class="number">0</span>))</span><br><span class="line">            <span class="keyword">continue</span>; </span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (isPrime(n) == <span class="number">1</span>) count++;</span><br><span class="line">    &#125;</span><br><span class="line">    return count;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 该函数判断是否是质数</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">isPrime</span><span class="params">(<span class="keyword">int</span> num)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> limit, i;</span><br><span class="line">    <span class="keyword">if</span> (num &lt;= <span class="number">1</span>) return <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (num == <span class="number">2</span> || num == <span class="number">3</span>) return <span class="number">1</span>;</span><br><span class="line">    limit = <span class="built_in">sqrt</span>(n) + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">2</span>; i &lt; limit; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (num % i == <span class="number">0</span>) return <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    return <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>显然这种解法的复杂度为O（n^2），因此在提交的时候会直接Time Limit Exceeded。 </p>
+<h3 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h3><p>仔细研究上面的算法可以发现如下优化:</p>
+<p><strong>合数可以分解成若干个质数，因此只要2~sqrt(n)间的质数不能整除n即可, 因此在下面的算法中我们会将找到的质数全部保存下来。</strong></p>
+<p>先看c代码：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">countPrimes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i,j;</span><br><span class="line">    <span class="keyword">int</span> end = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 首先动态申请数组空间用于保存质数</span></span><br><span class="line">    <span class="keyword">int</span>* primes = (int*)<span class="built_in">malloc</span>(n*sizeof(int)); </span><br><span class="line">    <span class="keyword">int</span> limit;</span><br><span class="line">    <span class="keyword">if</span> (n &lt;= <span class="number">2</span>) return <span class="number">0</span>;</span><br><span class="line">    primes[count++] = <span class="number">2</span>;  <span class="comment">// 第一个质数明显是2，不用再判断</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">3</span>; i &lt; n; i++) &#123;</span><br><span class="line">        limit = <span class="built_in">sqrt</span>(i);  <span class="comment">//计算判断的终止点</span></span><br><span class="line">        <span class="comment">// 要判断i是不是质数，只需要判断2-sqrt(i)中的所有质数，</span></span><br><span class="line">        <span class="comment">// 因此下面的while语句即为找到prime数组中小于sqrt(i)</span></span><br><span class="line">        <span class="comment">// 的最大质数的下标</span></span><br><span class="line">        <span class="keyword">while</span> (primes[end] &lt;= limit &amp;&amp; end &lt; count) end++;</span><br><span class="line">        <span class="comment">// 然后依次判断所有质数，如果整除说明不是质数</span></span><br><span class="line">        <span class="comment">// 否则将该数加入质数数组中；</span></span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; end; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i % primes[j] == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (j == end) primes[count++] = i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(primes);  <span class="comment">// 记得释放动态空间</span></span><br><span class="line">    return count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的代码再次提交后会发现提交通过，运行时间为260ms，仍然还是较慢；</p>
+<p>解法三</p>
+<p>下面再次考虑新的解法。</p>
+<p><strong>质数就是只能位1和本身整除的数。因此如果我们将小于n的数中2,3,4，…n-1的倍数去除，那么剩下的自然就是质数。这就是筛选法。</strong></p>
+<p>更进一步的：</p>
+<ol>
+<li>我们主要考虑2-（n/2+1）即可，显然大于等于(n/2+1)不可能被n整除；</li>
+<li>主要考虑2-（n/2+1）的所有质数即可；</li>
+</ol>
+<p>c代码如下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">countPrimes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i,j,limit;</span><br><span class="line">    <span class="comment">// 0-n 即为n+1,该数组用于存储是否是质数标志，</span></span><br><span class="line">    <span class="comment">// 因此pflags[i]代表i是否是质数</span></span><br><span class="line">    <span class="keyword">char</span>* pflags = (char*)<span class="built_in">malloc</span>(n+<span class="number">1</span>); </span><br><span class="line">    <span class="keyword">if</span> (n &lt;= <span class="number">2</span>) return <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    pflags[<span class="number">2</span>] = <span class="number">1</span>;  <span class="comment">// 2显然是质数</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">3</span>; i &lt; n; ++i) &#123; <span class="comment">//初始化数组</span></span><br><span class="line">        pflags[i++] = <span class="number">1</span>;  <span class="comment">// 所有的奇数初始为1，偶数为0</span></span><br><span class="line">        pflags[i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    limit = n / <span class="number">2</span> + <span class="number">1</span>; </span><br><span class="line">    <span class="comment">// 下面的循环用于依次去掉3-limit的每个数的倍数，对于i， </span></span><br><span class="line">    <span class="comment">// 如果i是合数，那么跳过3，因此只用考虑质数</span></span><br><span class="line">    <span class="comment">// 如果i是质数，那么从2×i开始，依次将小于n的i的倍数标为0</span></span><br><span class="line">    <span class="comment">// 此处使用加法代替乘法</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">3</span>; i &lt; limit; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0</span> == pflags[i]) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">for</span> (j = i+i; j &lt; n; j += i) &#123;</span><br><span class="line">            pflags[j] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">2</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == pflags[i]) count++;  <span class="comment">// 遍历数组，统计质数数目</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    return count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>该方法提交成功，运行时间为96ms， 比解法2大大提升。</p>
+<h3 id="解法四"><a href="#解法四" class="headerlink" title="解法四"></a>解法四</h3><p>在discuss中，发现一个使用c写的运行28ms的代码如下：<br>也是使用筛选法，代码如下。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 2000000</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> M 200000</span></span><br><span class="line"><span class="keyword">class</span> Solution &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">bool</span> visit[N] = &#123;&#125;;</span><br><span class="line">    <span class="keyword">int</span> p[M] = &#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">countPrimes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> res = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">3</span>; i &lt; n; i+=<span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span>(!visit[i]) &#123;</span><br><span class="line">                p[res++] = i;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; res &amp;&amp; i*p[j] &lt; n; j++) &#123;</span><br><span class="line">                visit[i*p[j]] = <span class="literal">true</span>;</span><br><span class="line">                <span class="keyword">if</span>(i % p[j] == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return res+(n&gt;<span class="number">2</span>?<span class="number">1</span>:<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<p><strong>转载请标明文章出处。本文内容为实践后的原创整理，如果侵犯了您的版权，请联系我进行删除，邮件：yanhealth@163.com</strong></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/LeetCode/">LeetCode</a><a href="/tags/算法/">算法</a><a href="/tags/质数/">质数</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/04/07/count_prime/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/04/07/count_prime/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/07/actor-model-research/" title="Actor 模型调研" itemprop="url">Actor 模型调研</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Jiankang Yan" target="_blank" itemprop="author">Jiankang Yan</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-07T08:12:59.848Z" itemprop="datePublished"> 发表于 2016-04-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Actor-模型的历史"><a href="#Actor-模型的历史" class="headerlink" title="Actor 模型的历史"></a><strong>Actor 模型的历史</strong></h2><p>&nbsp;&nbsp;&nbsp;&nbsp; Actor 模型最早由 Hewitt 于 1977 年提出,经过许多人的扩展,后来 Agha 总结定义了一个由少数表达能力强的原语组成的Actor模型。由于其提供的封装和消息传递等机制与面向对象方法非常相似,而且Actor模型又具有灵活的控制结构和强大的并发描述能力,因此成为并发面向对象语言的重要的基础模型之一。<br>&nbsp;&nbsp;&nbsp;&nbsp; Actor 模型提出之后,一系列基于 Actor 模型的并发语言开始发展,包括 ABCL,ACT++,ConcurrentSmalltalk。其中比较著名的两种编程语言是 Erlang 和 Scala。Erlang是一种通用的并行程序设计语言,它由乔·阿姆斯特朗(Joe Armstrong)在瑞典电信设备制造商爱立信所辖的计算机科学研究室开发,目的是创造一种可以应付大规模开发活动的程序设计语言和执行环境。Scala 是一种针对JVM将函数和面向对象技术组合在一起的编程语言。这两种语言的并发特性的实现都是基于 Actor 模型来实现的,而这两种语言<br>是目前比较受欢迎的并发编程语言,因此它们的发展对Actor的推广起了重要的作用。 到现在为止,Actor模型的使用无处不在,即使有些地方并没有明确说采用的 Actor 模型: </p>
+<ul>
+<li>Google 提出的 Map/Reduce 分布式运算平台  </li>
+<li>C#,Java 等语言中的 lock 互斥实现  </li>
+<li>传统 Email</li>
+<li>信箱的实现</li>
+<li>……<h2 id="Actor-模型设计思想"><a href="#Actor-模型设计思想" class="headerlink" title="Actor 模型设计思想"></a><strong>Actor 模型设计思想</strong></h2></li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; Actor 设计思想中最重要的一点就是:Actor模型希望能以一种更自然的方式模拟人类社会分工协作解决一类复杂系统问题的工作模式,因此在 Actor 的设计哲学中,认为万物都是Actor,这与面向对象编程的“一切皆是对象”类似。两者的根本区别在于面向对象编程通常是顺序执行的,而Actor模型是并发执行的。<br>&nbsp;&nbsp;&nbsp;&nbsp; Actor 模型通过消息来进行Actor之间的交互,发送消息是异步非阻塞的消息传递,也就说发送完消息并不需要等待响应;而面向对象对象之间是通过方法调用的,是同步阻塞的。<br>&nbsp;&nbsp;&nbsp;&nbsp; 因为 Actor 之间只能发送消息,而不会共享任何数据或者内存空间,因此不存在锁的问题。<br>&nbsp;&nbsp;&nbsp;&nbsp; Actor 模型通过隔离控制和计算实体,实现封装和模块化;<br>&nbsp;&nbsp;&nbsp;&nbsp; 我们可以这么认为:<br>&nbsp;&nbsp;&nbsp;&nbsp; <strong>Actor=数据+行为+消息</strong> ,<br>&nbsp;&nbsp;&nbsp;&nbsp; 即一个Actor实体是数据、行为和消息的合集,Actor 之间只能通过消息来传递信息。</p>
+<h2 id="Actor-模型机制介绍"><a href="#Actor-模型机制介绍" class="headerlink" title="Actor 模型机制介绍"></a><strong>Actor 模型机制介绍</strong></h2><p>&nbsp;&nbsp;&nbsp;&nbsp;下面简单介绍一些 Actor 的设计原理和机制。 </p>
+<h3 id="Actor-基本元素"><a href="#Actor-基本元素" class="headerlink" title="Actor 基本元素"></a><strong>Actor 基本元素</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;Actor 模型中的基本元素有:actor 实体,邮箱,信息,行为,状态。<br>&nbsp;&nbsp;&nbsp;&nbsp;一个actor实体是对客观世界功能实体的抽象和模拟,它是一个活动的对象,其职能是处理各类消息。比如,现实世界中的学生和老师都是一个 actor。<br><img src="http://7xj1d3.com1.z0.glb.clouddn.com/actor-example.jpg" alt="Actor模型示例"><br>&nbsp;&nbsp;&nbsp;&nbsp;每个  actor  实体内部都有一个信箱,用于存放接受的消息,信箱有一个唯一的地址,且在 Actor的整个生命周期中地址是不会改变的,一般actor名字可以作为地址。就比如每个学生和老师都有一个实名信箱一样。<br>&nbsp;&nbsp;&nbsp;&nbsp;actor 之间只能通过互发消息来影响对方的行为,也就是邮件,存储在邮箱中的消息按先到先服务的顺序被响应。每个 actor 实体只能向认识的 actor 实体发消息,也就是发送消息必须知道对方的地址。学生通过发邮件向老师传递消息,老师可以回复学生的信息,也可以单独向学生发消息,当然前提是学生或者老师知道对方的邮箱地址。<br>&nbsp;&nbsp;&nbsp;&nbsp;actor 的行为说明 actor如何响应一个请求消息,一般行为描述的代码体包含一组可以响应的方法定义。<br>&nbsp;&nbsp;&nbsp;&nbsp;每个 actor 总是处在一个状态之下,每个状态会对应一组行为定义,行为导致状态变化,行为执行依靠线程。比如一个缓冲池的Actor,在状态为空的时候只有 put 方法,在状态为满的时候只有get方法,不空也不满的时候既可以执行 get 操作,也可以执行 put 操作。 </p>
+<h3 id="Actor-消息处理"><a href="#Actor-消息处理" class="headerlink" title="Actor 消息处理"></a><strong>Actor 消息处理</strong></h3><p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/actor-message-process.jpg" alt="Actor模型消息处理"><br>&nbsp;&nbsp;&nbsp;&nbsp;在处理1个消息时, 1个actor可以做3种操作: &nbsp;&nbsp;&nbsp;&nbsp;生成新actor、发消息给认识的actor和指定一个替代行为，可以使用三个原语来表示。<br>&nbsp;&nbsp;&nbsp;&nbsp;new 原语用来生成新的actor,返回值所生成的actor的邮箱地址. 这使得actor可以在计算中按需要动态生成；<br>&nbsp;&nbsp;&nbsp;&nbsp;send原语用来进行消息传递,一个消息包含目的actor的邮箱地址、要调用的方法名和引用该方法所需参数；<br>&nbsp;&nbsp;&nbsp;&nbsp;become原语用来指明一个替代行为，替代行为是指actor 在处理完本消息后所处的行为，也就是actor用指出的替代行为来处理下一个消息，这样在become语句完成之后如果有下一条消息到达，可以继续执行，实现流水线并发。Become操作也可以改变actor所处的状态。<br>&nbsp;&nbsp;&nbsp;&nbsp;以上三个操作在一个信息的处理过程中是可以并发执行的，因为他们均为原语操作，不会被打断。</p>
+<h3 id="Actor-并发实现"><a href="#Actor-并发实现" class="headerlink" title="Actor 并发实现"></a><strong>Actor 并发实现</strong></h3><p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/actor-cocurrent.jpg" alt="Actor模型并发示意图"><br>&nbsp;&nbsp;&nbsp;&nbsp;Actor模型为并行而生，根据维基百科中的描述，它原本是为大量独立的微型处理器所构建的高性能网络而设计的模型。而目前，单台机器也有了多个独立的计算单元，这就是为什么在并行程序愈演愈烈的今天，Actor模型又重新回到了人们的视线之中了。Actor模型的执行方式有两个特点：<br>1) 每个Actor，单线程地依次执行发送给它的消息，在内部可以通过become原语来实现流水线并发；<br>2) 不同的Actor可以同时执行它们的消息；<br>如上图所示，我们学生可以单线程串行的处理自己的信息，但是由于多个学生和多个老师都可以并行的处理自己的消息，因此整个系统的并发效率是大大提高了。<br>&nbsp;&nbsp;&nbsp;&nbsp;我们知道，系统中执行任务的最小单元是线程，数量一定程度上是有限的，而过多的线程会占用大量资源，也无法带来最好的运行效率。但是Actor并不是线程实体，虽然Actor的底层实现还是线程，但是后面我们会谈到，由于线程的复用，因此Actor的并发效率是比较高，目前实现百万级别的Actor模型已经存在了。</p>
+<h3 id="Actor任务调度策略"><a href="#Actor任务调度策略" class="headerlink" title="Actor任务调度策略"></a><strong>Actor任务调度策略</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;Actor模型的任务调度一般有两个策略，一个是基于线程调度，一个是基于事件调度。<br>&nbsp;&nbsp;&nbsp;&nbsp;基于线程的调度为每个 actor 实体分配一个线程，在接受一个消息时，如果当前 actor的消息队列为空，则会阻塞当前线程直到接收到该消息为止。基于线程的调度实现起来较为简单，但是线程的开销是比较大的，线程数量是受到操作系统的限制，因此基于线程的调度会影响actor的并发性能；<br>&nbsp;&nbsp;&nbsp;&nbsp;基于事件的调度，在有消息到达，有任务需要执行时才会为 actor 的任务分配线程并执行。这样就可以使用少量的线程来执行许多个 actor 实体提交的任务，从而保证了运算资源的动态调度，也使系统有很好的伸缩性。<br>&nbsp;&nbsp;&nbsp;&nbsp;Scala语言就是基于事件的调度策略，所有actor共享一个固定大小的线程池，当一个Actor启动之后，系统会分配一个线程给它使用，如果当前邮箱中没有需要处理的消息，就会把actor设置为等待状态并且释放这个线程；如果当前消息队列里面有消息需要处理，则从线程池里选择一个新的线程来处理。处理完后会立即返回，或者是立即抛出异常，结束该线程的执行，这样该线程就可以被其它actor使用。这种通过线程复用的方式可以提高Actor模型的并发性能。</p>
+<h3 id="Actor实现例子"><a href="#Actor实现例子" class="headerlink" title="Actor实现例子"></a><strong>Actor实现例子</strong></h3><p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/actor-java-example.jpg" alt="Actor模型java代码示例"><br>&nbsp;&nbsp;&nbsp;&nbsp;这是一个基于java 的Actor模型的例子，因为java有一个Actor模型的实现库。可以看到，当hello actor收到greet的消息之后，他会发送一个打印消息到系统内置的标准输出stdout actor，stdout actor收到消息后会把信息打印到屏幕上，同时hello actor会创建一个world类型的actor，名称为other，并向这个actor发送audience消息。Other actor收到audience消息后会调用audience方法，所以也会向stdout actor发送打印World的消息。<br>&nbsp;&nbsp;&nbsp;&nbsp;注意，由于消息是异步的，因此hello和world的打印顺序是不确定的。</p>
+<h2 id="Actor模型的应用"><a href="#Actor模型的应用" class="headerlink" title="Actor模型的应用"></a><strong>Actor模型的应用</strong></h2><p>&nbsp;&nbsp;&nbsp;&nbsp;讲完了actor的机制，那么我们需要考虑为什么需要actor模型，actor模型适合在什么情况下用？我们可以看到，如果我们的编程模型变成了这种只能进行消息传递，没有共享变量，也没有方法调用，这完全不符合我们的编程习惯，因此在一开始肯定会束手无策。但是Actor模型的存在肯定有其存在的意义，而且Actor模型更符合自然社会的运作模式，所以我觉得基于Actor模型的编程语言是需要我们转变编程的思维习惯，改变长期以来对面向过程和面向对象的程序设计的固定思维模式，就像人们从面向过程到面向对象的思维模式的改变。经过一些了解，发现Actor的主要运用有两种场景。</p>
+<h3 id="两种编程模式"><a href="#两种编程模式" class="headerlink" title="两种编程模式"></a><strong>两种编程模式</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;为了了解Actor的应用，在这里先讲一下两种编程模式：<strong>线程驱动和事件驱动</strong>。<br>基于线程的编程如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result = query(<span class="string">'SELECT * FROM posts WHERE id = 1'</span>);</span><br><span class="line">do_something_with(result);</span><br></pre></td></tr></table></figure></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;线程驱动一般是顺序执行的，比如我们要访问数据库，需要先查询数据库，再拿查询的结果去做事情，如上所示；<br>基于事件的编程如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">query_finished = function(result) &#123;</span><br><span class="line">        do_something_with(result);</span><br><span class="line">&#125;</span><br><span class="line">query(<span class="string">'SELECT * FROM posts WHERE id = 1'</span>, query_finished);</span><br></pre></td></tr></table></figure></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;而事件的驱动则改变了思维模式，发射事件后即忘记，做别的事情了，无需立即等待刚才发射的响应结果了。在基于线程编程中，我们为什么要等待，是因为希望基于响应结果来进行一些逻辑，这是线程驱动的思维，而事件驱动的思维就是将这些逻辑放到消费者那里去处理（事件的发射方为生产者，事件结果的使用方为消费者）。比如这个例子中，我们将基于数据库查询结果的响应操作作为事件响应，当数据库查询返回后会回调这个函数。<br>&nbsp;&nbsp;&nbsp;&nbsp;因此事件驱动是一种异步编程，需要完全改变思路，将“请求响应”的思路转变到“事件驱动”思路上，事件驱动编程分为事件的检测和响应两部分。</p>
+<h3 id="两种编程模式在并发时存在的问题"><a href="#两种编程模式在并发时存在的问题" class="headerlink" title="两种编程模式在并发时存在的问题"></a><strong>两种编程模式在并发时存在的问题</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;基于线程驱动的编程模式是同步共享机制，因此在多线程编程时，存在以下问题：</p>
+<ul>
+<li>需要显式协调共享数据锁；</li>
+<li>依赖锁导致死锁；</li>
+<li>难以调试；</li>
+<li>多线程在多核上的性能并不会比每个单核一个线程性能更好；</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;基于事件驱动的编程模式是异步非阻塞机制，天生具有并发性，但是仍然存在以下问题：</p>
+<ul>
+<li>使得业务流程晦涩难懂；</li>
+<li>需要转变软件编程思维；</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;而Actor模型的出现综合这两者的优点，Actor模型将事件统一为消息传递，通过隔离控制和计算实体来实现封装，大大降低了事件驱动编程的难度。</p>
+<h3 id="Actor模型应用-事件编程"><a href="#Actor模型应用-事件编程" class="headerlink" title="Actor模型应用-事件编程"></a><strong>Actor模型应用-事件编程</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;基于事件编程存在以下特点：<br>1) 事件发生不可控，事件响应处理必须及时。<br>2) 事件处理不能采取传统同步模式，容易锁，堵塞，性能差，设计耦合，不能切分。<br>3) 事件处理必须采取异步，性能高，设计松耦合。<br>4) 事件处理最好并发，与事件触发机制一致。<br>&nbsp;&nbsp;&nbsp;&nbsp;而Actor模型的优点就在于：核心是异步消息机制；无共享状态，无锁，无堵塞；异步，高并发；因此Actor模型是事件驱动编程目前最合适模型。</p>
+<h3 id="Actor模型应用-保证数据一致性"><a href="#Actor模型应用-保证数据一致性" class="headerlink" title="Actor模型应用-保证数据一致性"></a><strong>Actor模型应用-保证数据一致性</strong></h3><p>&nbsp;&nbsp;&nbsp;&nbsp;Actor模型的另外一种使用场景就是保护数据的一致性。<br>&nbsp;&nbsp;&nbsp;&nbsp;线程1：<br>开始事务 –&gt; 访问表A  –&gt; 访问表B –&gt; 提交事务<br>&nbsp;&nbsp;&nbsp;&nbsp;线程2：<br>开始事务 –&gt; 访问表B –&gt; 访问表A –&gt; 提交事务</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;比如说有两个线程，第一个线程开始事务之后先访问表 A 再访问表B，第二个线程先访问表B，再访问表A，这种情况是很容易出现死锁的。<br>&nbsp;&nbsp;&nbsp;&nbsp;这里线程是代表控制行为，表AB是代表数据，因此传统的模型中数据是被动的给行为，这样的话就很难保证数据的一致性，必须要给数据上锁。<br>&nbsp;&nbsp;&nbsp;&nbsp;而Actor模型如何避免锁呢？<br>&nbsp;&nbsp;&nbsp;&nbsp;Actor模型的一个关键思想就是：要让数据自己有行为能力保护实现自己的一致性。因此在Actor模型中，数据的一致性是靠行为职责来保证的，没有行为守护的数据是一盘散沙，这样的数据必须靠锁来维护一致性。如果数据自身要求有严格的一致性，也就是事务机制，数据就不能被动被加工，要让数据自己有行为能力保护实现自己的一致性，就像孩子小的时候可以任由爸妈怎么照顾关心都可以，但是如果孩子长大有自己的思想和要求，他就可能不喜欢被爸妈照顾，他要求自己通过行动实现自己的要求。只有我们改变思路，让数据自己有行为维护自己的一致性，才能真正安全实现真正的事务。<br>&nbsp;&nbsp;&nbsp;&nbsp;Actor模型在一个较高的层面上通过数据的行为实现了无锁的并发模型。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><strong>参考资料</strong></h2><ul>
+<li>Gul Agha. Actors: A Model of Concurrent Computation in Distributed Systems. Doctoral Dissertation. MIT Press. 1986.</li>
+<li>Philipp Haller and Martin Odersky (January 2007). Actors that Unify Threads and Events. Technical report LAMP. 2007.</li>
+<li><a href="http://www.jdon.com/" target="_blank" rel="external">解道jdon</a></li>
+<li>Dennis Kafura, Manibrata Mukherji, Greg Lavender. Act++ 2.0 : A Class Library for Concurrent Programming in C++ Using Actors.</li>
+<li><a href="http://rerun.me/" target="_blank" rel="external">AKKA NOTES</a></li>
+<li>董哲,刘琳,田籁声. 基于ACTOR模型的并发面向对象语言AC++[J]. 软件学报,1997,03:38-44.</li>
+</ul>
+<p><br> <br><br><br></p>
+<hr>
+<p><strong>转载请标明文章出处。本文内容为实践后的原创整理，如果侵犯了您的版权，请联系我进行删除，邮件：yanhealth@163.com</strong></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/软件工程/">软件工程</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/java/">java</a><a href="/tags/actor模型/">actor模型</a><a href="/tags/并发/">并发</a><a href="/tags/Scala/">Scala</a><a href="/tags/线程驱动/">线程驱动</a><a href="/tags/事件驱动/">事件驱动</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/04/07/actor-model-research/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/04/07/actor-model-research/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="healthyjk" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Linux配置/" title="Linux配置">Linux配置<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/流媒体技术/" title="流媒体技术">流媒体技术<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/生活杂记/" title="生活杂记">生活杂记<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件工程/" title="软件工程">软件工程<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/集群技术/" title="集群技术">集群技术<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/storm/" title="storm">storm<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/zookeeper/" title="zookeeper">zookeeper<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/rtsp/" title="rtsp">rtsp<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/kafka/" title="kafka">kafka<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/clojure/" title="clojure">clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ubuntu/" title="ubuntu">ubuntu<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并行度/" title="并行度">并行度<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/idea/" title="idea">idea<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Clojure/" title="Clojure">Clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/cursive/" title="cursive">cursive<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Jiankang Yan in Fudan. <br/>
+			This is my github blog, Welcome.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/yanhealth" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/healthyjk" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
+		
+		<a href="/about" target="_blank" title="Jiankang Yan">Jiankang Yan</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

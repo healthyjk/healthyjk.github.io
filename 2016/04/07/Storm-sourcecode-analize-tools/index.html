@@ -1,0 +1,669 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Storm 源码分析——工具篇 | Yan Jiankang&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Jiankang Yan">
+    
+
+    
+    <meta name="description" content="工欲善其事，必先利其器。
+在开始分析storm源码之前，一个好的阅读代码的环境是非常有帮助的。storm的代码包括：核心功能的Clojure代码，对外接口的java 代码，RPC通信的thrift代码，bin中客户端命令的python代码等。
+虽然可以在命令行使用vim直接阅读，但是对于对storm还不熟悉的像我这样的小白，我的建议是使用IDE效率会更高。
+Intellij idea + Curs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Storm 源码分析——工具篇">
+<meta property="og:url" content="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-analize-tools/index.html">
+<meta property="og:site_name" content="Yan Jiankang's Blog">
+<meta property="og:description" content="工欲善其事，必先利其器。
+在开始分析storm源码之前，一个好的阅读代码的环境是非常有帮助的。storm的代码包括：核心功能的Clojure代码，对外接口的java 代码，RPC通信的thrift代码，bin中客户端命令的python代码等。
+虽然可以在命令行使用vim直接阅读，但是对于对storm还不熟悉的像我这样的小白，我的建议是使用IDE效率会更高。
+Intellij idea + Curs">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-1.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-2.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-3.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-4.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-1.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-2.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-3.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-4.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-5.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-6.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-7.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-8.png">
+<meta property="og:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-9.png">
+<meta property="og:updated_time" content="2016-02-02T12:24:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Storm 源码分析——工具篇">
+<meta name="twitter:description" content="工欲善其事，必先利其器。
+在开始分析storm源码之前，一个好的阅读代码的环境是非常有帮助的。storm的代码包括：核心功能的Clojure代码，对外接口的java 代码，RPC通信的thrift代码，bin中客户端命令的python代码等。
+虽然可以在命令行使用vim直接阅读，但是对于对storm还不熟悉的像我这样的小白，我的建议是使用IDE效率会更高。
+Intellij idea + Curs">
+<meta name="twitter:image" content="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-1.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Yan Jiankang&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Yan Jiankang&#39;s Blog" title="Yan Jiankang&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Yan Jiankang&#39;s Blog">Yan Jiankang&#39;s Blog</a></h1>
+				<h2 class="blog-motto">博学之,审问之,慎思之,明辨之,笃行之</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:yanjiankang.cn">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/07/Storm-sourcecode-analize-tools/" title="Storm 源码分析——工具篇" itemprop="url">Storm 源码分析——工具篇</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Jiankang Yan" target="_blank" itemprop="author">Jiankang Yan</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-07T08:12:59.864Z" itemprop="datePublished"> 发表于 2016-04-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intellij-idea-Cursive"><span class="toc-number">1.</span> <span class="toc-text">Intellij idea + Cursive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装storm编译依赖"><span class="toc-number">2.</span> <span class="toc-text">安装storm编译依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#导入Storm-core项目"><span class="toc-number">3.</span> <span class="toc-text">导入Storm-core项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何编译storm生成可以发布的binary版本"><span class="toc-number">4.</span> <span class="toc-text">如何编译storm生成可以发布的binary版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#storm的代码结构"><span class="toc-number">5.</span> <span class="toc-text">storm的代码结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-storm-core-src-jvm"><span class="toc-number">5.1.</span> <span class="toc-text">Java   (storm-core/src/jvm/)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clojure-storm-core-src-clj"><span class="toc-number">5.2.</span> <span class="toc-text">Clojure  (storm-core/src/clj/)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Thrift-（storm-core-src-storm-thrift）"><span class="toc-number">5.3.</span> <span class="toc-text">Thrift （storm-core/src/storm.thrift）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Web-UI-storm-core-src-ui"><span class="toc-number">5.4.</span> <span class="toc-text">Web UI (storm-core/src/ui)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<p><strong>工欲善其事，必先利其器。</strong></p>
+<p>在开始分析storm源码之前，一个好的阅读代码的环境是非常有帮助的。<br>storm的代码包括：核心功能的Clojure代码，对外接口的java 代码，RPC通信的thrift代码，bin中客户端命令的python代码等。</p>
+<p>虽然可以在命令行使用vim直接阅读，但是对于对storm还不熟悉的像我这样的小白，我的建议是使用IDE效率会更高。</p>
+<h2 id="Intellij-idea-Cursive"><a href="#Intellij-idea-Cursive" class="headerlink" title="Intellij idea + Cursive"></a>Intellij idea + Cursive</h2><p>我的推荐是：<strong>Intellij idea + Cursive</strong> （一开始我是用的是Eclipse，但是对于Clojure的支持并不是很好，直到我发现了Cursive）</p>
+<p>Intellij idea的安装可以直接从其官网下载：<a href="https://www.jetbrains.com/idea/download/" target="_blank" rel="external">https://www.jetbrains.com/idea/download/</a><br>免费的Community版本功能就足够使用；</p>
+<p>我是CentOS系统，下载的linux版本，下载后解压运行即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Unpack the idea idea-15.0.3.tar.gz file using the following command: </span></span><br><span class="line">tar xfz idea-15.0.3.tar.gz</span><br><span class="line"><span class="comment">#Run idea.sh from the bin subdirectory.</span></span><br></pre></td></tr></table></figure></p>
+<p>然后<strong>安装Cursive 插件</strong>：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-1.png" alt=""></p>
+<p>运行idea，点击configure，再点击setting。</p>
+<p>然后点击plugins：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-2.png" alt=""></p>
+<p>再点击底下的Browse repositories， </p>
+<p>然后搜索cursive，点击Install ，我这边因为已经安装过了，所以没有install的按钮：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-3.png" alt=""></p>
+<p>安装后重启idea，进入Cursive会提示需要license， 去他的官网<a href="https://cursive-ide.com/申请一个免费的即可：" target="_blank" rel="external">https://cursive-ide.com/申请一个免费的即可：</a></p>
+<p>点击首页的Get a License按钮，如下填写后：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-install-cursive-4.png" alt="enter image description here"></p>
+<p>会将License发送到你的邮箱。</p>
+<p>至此安装完成。</p>
+<h2 id="安装storm编译依赖"><a href="#安装storm编译依赖" class="headerlink" title="安装storm编译依赖"></a>安装storm编译依赖</h2><p>按照storm的开发文档<a href="https://www.zybuluo.com/yanhealth/note/281972的说明，storm的编译依赖python" target="_blank" rel="external">https://www.zybuluo.com/yanhealth/note/281972的说明，storm的编译依赖python</a>, ruby 和nodejs，需要预先安装：</p>
+<p>The ruby package manager rvm and nodejs package manager nvm are for convenience and are used in the tests which run on travis. (ruby的包管理器rvm和nodejs的包管理器nvm是用于在 travis (<a href="https://en.wikipedia.org/wiki/Travis_CI" target="_blank" rel="external">https://en.wikipedia.org/wiki/Travis_CI</a>) 上的测试的) 。可以用如下命令安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://get.rvm.io | bash <span class="_">-s</span> stable --autolibs=enabled &amp;&amp; <span class="built_in">source</span> ~/.profile</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.26.1/install.sh | bash &amp;&amp; <span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure>
+<p>安装好以后运行如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rvm use 2.1.5 --install</span><br><span class="line">nvm install 0.12.2</span><br><span class="line">nvm use 0.12.2</span><br></pre></td></tr></table></figure>
+<h2 id="导入Storm-core项目"><a href="#导入Storm-core项目" class="headerlink" title="导入Storm-core项目"></a>导入Storm-core项目</h2><p>在官网下载storm的源代码并解压后，在idea点击import，然后选择storm源码目录下的storm-core：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-1.png" alt=""></p>
+<p>然后下一步，选择Maven：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-2.png" alt=""></p>
+<p>next，默认就可以：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-3.png" alt=""></p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-4.png" alt="enter image description here"></p>
+<p>然后选择安装的jdk的位置，我选的版本1.7，没有安装需要先安装jdk；</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-5.png" alt=""></p>
+<p>导入后会开始解决依赖问题：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-6.png" alt="enter image description here"></p>
+<p>然后添加一个maven的打包操作：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-7.png" alt="enter image description here"></p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-8.png" alt=""></p>
+<p>此处-DskipTests=true ，是指跳过打包时的测试阶段，因为我的版本中测试会失败。同时也可以节省时间。</p>
+<p>最后运行打包命令，会在storm-core项目根目录下的target中生成jar包文件：</p>
+<p><img src="http://7xj1d3.com1.z0.glb.clouddn.com/idea-import-storm-9.png" alt=""></p>
+<h2 id="如何编译storm生成可以发布的binary版本"><a href="#如何编译storm生成可以发布的binary版本" class="headerlink" title="如何编译storm生成可以发布的binary版本"></a>如何编译storm生成可以发布的binary版本</h2><p>以下命令可以将storm编译后安装到本地的.m2库中<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn clean install  <span class="comment"># 可加上-DskipTests=true 跳过测试</span></span><br></pre></td></tr></table></figure></p>
+<p>如果你需要对storm源代码进行改动，并且希望生成binary版本的话，可以按照storm的Develper教程<a href="https://www.zybuluo.com/yanhealth/note/281972来操作：" target="_blank" rel="external">https://www.zybuluo.com/yanhealth/note/281972来操作：</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># First, build the code. 首先在storm根目录下install</span></span><br><span class="line">$ mvn clean install <span class="comment"># you may skip tests with `-DskipTests=true` to save time</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Create the binary distribution. </span></span><br><span class="line">$ <span class="built_in">cd</span> storm-dist/binary &amp;&amp; mvn package</span><br></pre></td></tr></table></figure>
+<p>至此，基本上storm的整个环境配置完成。可以开始storm源代码的阅读和二次开发。</p>
+<h2 id="storm的代码结构"><a href="#storm的代码结构" class="headerlink" title="storm的代码结构"></a>storm的代码结构</h2><h3 id="Java-storm-core-src-jvm"><a href="#Java-storm-core-src-jvm" class="headerlink" title="Java   (storm-core/src/jvm/)"></a>Java   (storm-core/src/jvm/)</h3><p><strong>backtype.storm.coordination</strong>: 实现了DRPC和事务性topology里用到的基于Storm的批处理功能。这个包里最重要得类是CoordinatedBolt<br><strong>backtype.storm.drpc</strong>: DRPC的更高层次抽象的具体实现<br><strong>backtype.storm.generated</strong>: 自动生成的Thrift代码（利用这里folk出来的Thrift版本生成的，主要是把org.apache.thrift包重命名成org.apache.thrift7来避免与其他Thrift版本的冲突）<br><strong>backtype.storm.grouping</strong>: 包含了用户实现自定义stream分组类时需要用到的接口<br><strong>backtype.storm.hooks</strong>: 定义了处理storm各种事件的钩子接口，例如当task发射tuple时、当tuple被ack时。关于钩子的手册详见这里<br><strong>backtype.storm.serialization</strong>: storm序列化/反序列化tuple的实现。在Kryo之上构建。<br><strong>backtype.storm.spout</strong>: spout及相关接口的定义（例如”SpoutOutputCollector”）。也包括了”ShellSpout”来实现非JVM语言定义spout的协议。<br><strong>backtype.storm.task:</strong> bolt及相关接口的定义（例如”OutputCollector”）。也包括了”ShellBolt”来实现非JVM语言定义bolt的协议。最后，”TopologyContext”也是在这里定义的，用来在运行时供spout和bolt使用以获取topology的执行信息。<br><strong>backtype.storm.testing</strong>: 包括了storm单元测试中用到的各种测试bolt及工具。<br><strong>backtype.storm.topology</strong>: 在Thrift结构之上的Java层，用以提供一个纯Java API来使用Storm（用户不需要了解Thrift的细节）。”TopologyBuilder”及不同spout和bolt的基类们也在这里定义。稍高一层次的接口”IBasicBolt”也在这里定义，它会使得创建某些特定类型的bolt会更加简洁。<br><strong>backtype.storm.transactional</strong>: 包括了事务性topology的实现。<br><strong>backtype.storm.tuple</strong>: 包括Storm中tuple数据模型的实现。<br><strong>backtype.storm.utils</strong>: 包含了Storm源码中用到的数据结构及各种工具类。</p>
+<h3 id="Clojure-storm-core-src-clj"><a href="#Clojure-storm-core-src-clj" class="headerlink" title="Clojure  (storm-core/src/clj/)"></a>Clojure  (storm-core/src/clj/)</h3><p><strong>backtype.storm.bootstrap</strong>: 包括了1个有用的宏来引入源码中用到的所有类及命名空间。<br><strong>backtype.storm.clojure</strong>: 包括了利用Clojure为Storm定义的特定领域语言(DSL)。<br><strong>backtype.storm.cluster</strong>: Storm守护进程中用到的Zookeeper逻辑都封装在这个文件中。这部分代码提供了API来将整个集群的运行状态映射到Zookeeper的”文件系统”上（例如哪里运行着怎样的task，每个task运行的是哪个spout/bolt）。<br><strong>backtype.storm.command</strong>.<em>: 这些命名空间包括了各种”storm xxx”开头的客户端命令行的命令实现。这些实现都很简短。<br><strong>backtype.storm.config</strong>: Clojure中config的读取/解析实现。同时也包括了工具函数来告诉nimbus、supervisor等守护进程在各种情况下应该使用哪些本地目录。例如：”master-inbox”函数会返回本地目录告诉Nimbus应该将上传给它的jar包保存到哪里。<br><strong>backtype.storm.daemon.acker</strong>: “acker” bolt的实现。这是Storm确保数据被完全处理的关键组成部分。<br><strong>backtype.storm.daemon.common</strong>: Storm守护进程用到的公共函数，例如根据topology的名字获取其id，将1个用户定义的topology映射到真正运行的topology（真正运行的topology是在用户定义的topology基础上添加了ack stream及acker bolt，参见system-topology!函数），同时包括了各种心跳及Storm中其他数据结构的定义。<br><strong>backtype.storm.daemon.drpc</strong>: 包括了DRPC服务器的实现，用来与DRPC topology一起使用。<br><strong>backtype.storm.daemon.nimbus</strong>: 包括了Nimbus的实现。<br><strong>backtype.storm.daemon.supervisor</strong>: 包括了Supervisor的实现。<br><strong>backtype.storm.daemon.task</strong>: 包括了spout或bolt的task实例实现。包括了处理消息路由、序列化、为UI提供的统计集合及spout、bolt执行动作的实现。<br><strong>backtype.storm.daemon.worker</strong>: 包括了worker进程（1个worker包含很多的task）的实现。包括了消息传输和task启动的实现。<br><strong>backtype.storm.event</strong>: 包括了1个简单的异步函数的执行器。Nimbus和Supervisor很多场合都用到了异步函数执行器来避免资源竞争。<br><strong>backtype.storm.log</strong>: 定义了用来输出log信息给log4j的函数。<br><strong>backtype.storm.messaging</strong>.</em>: 定义了1个高一层次的接口来实现点对点的消息通讯。工作在本地模式时Storm会使用内存中的Java队列来模拟消息传递。工作在集群模式时，消息传递使用的是ZeroMQ。通用的接口在protocol.clj中定义。<br><strong>backtype.storm.stats</strong>: 实现了向Zookeeper中写入UI使用的统计信息时如何进行汇总。实现了不同粒度的聚合。<br><strong>backtype.storm.testing</strong>: 包括了测试Storm topology的工具。包括时间仿真，运行一组固定数量的tuple然后获得输出快照的”complete-topology”，”tracker topology”可以在集群”空闲”时做更细粒度的控制操作，以及其他工具。<br><strong>backtype.storm.thrift</strong>: 包括了自动生成的Thrift API的Clojure封装以使得使用Thrift结构更加便利。<br><strong>backtype.storm.timer</strong>: 实现了1个后台定时器来延迟执行函数或者定时轮询执行。Storm不能使用Java里的Timer类，因为为了单测Nimbus和Supervisor，必须要与时间仿真集成起来使用。<br><strong>backtype.storm.ui.*</strong>: Storm UI的实现。完全独立于其他的代码，通过Nimbus的Thrift API来获取需要的数据。<br><strong>backtype.storm.util</strong>: 包括了Storm代码中用到的通用工具函数。<br><strong>backtype.storm.zookeeper</strong>: 包括了Clojure对Zookeeper API的封装，同时也提供了一些高一层次的操作例如：”mkdirs”、”delete-recursive”</p>
+<h3 id="Thrift-（storm-core-src-storm-thrift）"><a href="#Thrift-（storm-core-src-storm-thrift）" class="headerlink" title="Thrift （storm-core/src/storm.thrift）"></a>Thrift （storm-core/src/storm.thrift）</h3><p><strong>storm.thrift</strong>: RPC服务的通信接口定义<br><strong>genthrift.sh</strong>: 将storm.thrift文件中定义的结构编译转换为java代码(backtype.storm.generated)的脚本文件</p>
+<h3 id="Web-UI-storm-core-src-ui"><a href="#Web-UI-storm-core-src-ui" class="headerlink" title="Web UI (storm-core/src/ui)"></a>Web UI (storm-core/src/ui)</h3><p><strong>src/ui</strong> : 定义storm UI界面的网页文件资源</p>
+<p><br> <br><br><br></p>
+<hr>
+<p><strong>转载请标明文章出处。本文内容为实践后的原创整理，如果侵犯了您的版权，请联系我进行删除，邮件：yanhealth@163.com</strong></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>[1] <a href="https://github.com/apache/storm" target="_blank" rel="external">https://github.com/apache/storm</a><br>[2]  <a href="http://blog.csdn.net/pelick/article/details/17682477" target="_blank" rel="external">Storm源码结构 (来源Storm Github Wiki)</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/集群技术/">集群技术</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/storm/">storm</a><a href="/tags/idea/">idea</a><a href="/tags/Clojure/">Clojure</a><a href="/tags/cursive/">cursive</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-analize-tools/" data-title="Storm 源码分析——工具篇 | Yan Jiankang&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/04/07/Storm-sourcecode-uicode-1/" title="Storm 源码分析——UI界面显示代码分析（上）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Storm 源码分析——UI界面显示代码分析（上）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/04/07/storm-source-study-note-01/"  title="Storm源码阅读学习笔记之一(待整理)">
+ <strong>下一篇：</strong><br/> 
+ <span>Storm源码阅读学习笔记之一(待整理)
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/04/07/Storm-sourcecode-analize-tools/" data-title="Storm 源码分析——工具篇" data-url="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-analize-tools/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intellij-idea-Cursive"><span class="toc-number">1.</span> <span class="toc-text">Intellij idea + Cursive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装storm编译依赖"><span class="toc-number">2.</span> <span class="toc-text">安装storm编译依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#导入Storm-core项目"><span class="toc-number">3.</span> <span class="toc-text">导入Storm-core项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何编译storm生成可以发布的binary版本"><span class="toc-number">4.</span> <span class="toc-text">如何编译storm生成可以发布的binary版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#storm的代码结构"><span class="toc-number">5.</span> <span class="toc-text">storm的代码结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-storm-core-src-jvm"><span class="toc-number">5.1.</span> <span class="toc-text">Java   (storm-core/src/jvm/)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clojure-storm-core-src-clj"><span class="toc-number">5.2.</span> <span class="toc-text">Clojure  (storm-core/src/clj/)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Thrift-（storm-core-src-storm-thrift）"><span class="toc-number">5.3.</span> <span class="toc-text">Thrift （storm-core/src/storm.thrift）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Web-UI-storm-core-src-ui"><span class="toc-number">5.4.</span> <span class="toc-text">Web UI (storm-core/src/ui)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="healthyjk" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Linux配置/" title="Linux配置">Linux配置<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/流媒体技术/" title="流媒体技术">流媒体技术<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/生活杂记/" title="生活杂记">生活杂记<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件工程/" title="软件工程">软件工程<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/集群技术/" title="集群技术">集群技术<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/storm/" title="storm">storm<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/zookeeper/" title="zookeeper">zookeeper<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/rtsp/" title="rtsp">rtsp<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/kafka/" title="kafka">kafka<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/clojure/" title="clojure">clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ubuntu/" title="ubuntu">ubuntu<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并行度/" title="并行度">并行度<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/idea/" title="idea">idea<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Clojure/" title="Clojure">Clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/cursive/" title="cursive">cursive<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Jiankang Yan in Fudan. <br/>
+			This is my github blog, Welcome.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/yanhealth" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/healthyjk" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
+		
+		<a href="/about" target="_blank" title="Jiankang Yan">Jiankang Yan</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"yanjiankang"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

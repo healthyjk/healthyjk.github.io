@@ -1,0 +1,655 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Storm 源码分析——UI界面显示代码分析（上） | Yan Jiankang&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Jiankang Yan">
+    
+
+    
+    <meta name="description" content="#Storm源码分析——UI界面显示代码分析
+storm开发环境的配置请参考：storm源码分析——工具篇
+storm的UI界面的参数解释可以参考http://lbxc.iteye.com/blog/1522318
+storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考https://www.zybuluo.com/yanhealth/note/1429">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Storm 源码分析——UI界面显示代码分析（上）">
+<meta property="og:url" content="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-uicode-1/index.html">
+<meta property="og:site_name" content="Yan Jiankang's Blog">
+<meta property="og:description" content="#Storm源码分析——UI界面显示代码分析
+storm开发环境的配置请参考：storm源码分析——工具篇
+storm的UI界面的参数解释可以参考http://lbxc.iteye.com/blog/1522318
+storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考https://www.zybuluo.com/yanhealth/note/1429">
+<meta property="og:updated_time" content="2016-04-03T16:46:49.105Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Storm 源码分析——UI界面显示代码分析（上）">
+<meta name="twitter:description" content="#Storm源码分析——UI界面显示代码分析
+storm开发环境的配置请参考：storm源码分析——工具篇
+storm的UI界面的参数解释可以参考http://lbxc.iteye.com/blog/1522318
+storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考https://www.zybuluo.com/yanhealth/note/1429">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Yan Jiankang&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Yan Jiankang&#39;s Blog" title="Yan Jiankang&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Yan Jiankang&#39;s Blog">Yan Jiankang&#39;s Blog</a></h1>
+				<h2 class="blog-motto">博学之,审问之,慎思之,明辨之,笃行之</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:yanjiankang.cn">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/07/Storm-sourcecode-uicode-1/" title="Storm 源码分析——UI界面显示代码分析（上）" itemprop="url">Storm 源码分析——UI界面显示代码分析（上）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Jiankang Yan" target="_blank" itemprop="author">Jiankang Yan</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-07T08:12:59.865Z" itemprop="datePublished"> 发表于 2016-04-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#UI进程的启动"><span class="toc-number">1.</span> <span class="toc-text">UI进程的启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#backtype-storm-ui-core"><span class="toc-number">2.</span> <span class="toc-text">backtype.storm.ui.core</span></a></li></ol>
+		
+		</div>
+		
+		<p>#Storm源码分析——UI界面显示代码分析</p>
+<p>storm开发环境的配置请参考：<a href="http://yanjiankang.cn/2016/02/02/Storm-sourcecode-analize-tools/">storm源码分析——工具篇</a></p>
+<p>storm的UI界面的参数解释可以参考<a href="http://lbxc.iteye.com/blog/1522318" target="_blank" rel="external">http://lbxc.iteye.com/blog/1522318</a></p>
+<p>storm提供了ui界面的Restful API，主要API如下，详细的API的参数和返回值请参考<a href="https://www.zybuluo.com/yanhealth/note/142919：" target="_blank" rel="external">https://www.zybuluo.com/yanhealth/note/142919：</a><br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/api/v1/cluster/configuration (GET) </span><br><span class="line">/api/v1/cluster/summary (GET)</span><br><span class="line">/api/v1/supervisor/summary (GET)</span><br><span class="line">/api/v1/topology/summary (GET)</span><br><span class="line">/api/v1/topology/:id (GET)</span><br><span class="line">/api/v1/topology/:id/component/:component (GET)</span><br><span class="line">/api/v1/topology/:id/activate (POST)</span><br><span class="line">/api/v1/topology/:id/deactivate (POST)</span><br><span class="line">/api/v1/topology/:id/rebalance/:wait-time (POST)</span><br><span class="line">/api/v1/topology/:id/kill/:wait-time (POST)</span><br></pre></td></tr></table></figure></p>
+<p>这些接口函数的定义主要是在ui/core.clj文件中。下面主要分析UI进程的启动过程和以上接口数据的产生。 </p>
+<h2 id="UI进程的启动"><a href="#UI进程的启动" class="headerlink" title="UI进程的启动"></a>UI进程的启动</h2><p>我们知道，UI进程是通过以下命令启动的：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/storm ui</span><br></pre></td></tr></table></figure></p>
+<p>其中storm实际上是一个bash的脚本文件，storm 会通过以下命令调用bin/storm.py的python文件来执行：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">exec</span> <span class="string">"<span class="variable">$PYTHON</span>"</span> <span class="string">"<span class="variable">$&#123;STORM_BIN_DIR&#125;</span>/storm.py"</span> <span class="string">"<span class="variable">$@</span>"</span></span><br></pre></td></tr></table></figure></p>
+<p>storm.py中，接收到ui参数后，执行的函数代码如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ui</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="string">"""</span><br><span class="line">    Syntax: [storm ui]</span><br><span class="line">    Launches the UI daemon. </span><br><span class="line">    """</span></span><br><span class="line">    cppaths = [CLUSTER_CONF_DIR]</span><br><span class="line">    jvmopts = parse_args(confvalue(<span class="string">"ui.childopts"</span>, cppaths)) + [ </span><br><span class="line">        <span class="string">"-Dlogfile.name=ui.log"</span>,</span><br><span class="line">        <span class="string">"-Dlog4j.configurationFile="</span> + os.path.join(get_log4j_conf_dir(), <span class="string">"cluster.xml"</span>)</span><br><span class="line">    ]   </span><br><span class="line">    exec_storm_class(</span><br><span class="line">        <span class="string">"backtype.storm.ui.core"</span>,</span><br><span class="line">        jvmtype=<span class="string">"-server"</span>,</span><br><span class="line">        daemonName=<span class="string">"ui"</span>,</span><br><span class="line">        jvmopts=jvmopts,</span><br><span class="line">        extrajars=[STORM_DIR, CLUSTER_CONF_DIR])</span><br></pre></td></tr></table></figure></p>
+<p>其中首先会调用confvalue函数来获取UI进程执行的参数项，confvalue代码如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def confvalue(name, extrapaths, daemon=True):</span><br><span class="line">    global CONFFILE</span><br><span class="line">    <span class="built_in">command</span> = [</span><br><span class="line">        JAVA_CMD, <span class="string">"-client"</span>, get_config_opts(), <span class="string">"-Dstorm.conf.file="</span> + CONFFILE,</span><br><span class="line">        <span class="string">"-cp"</span>, get_classpath(extrapaths, daemon), <span class="string">"backtype.storm.command.config_value"</span>, name</span><br><span class="line">    ]</span><br><span class="line">    p = sub.Popen(<span class="built_in">command</span>, stdout=sub.PIPE)</span><br><span class="line">    output, errors = p.communicate()</span><br><span class="line">    <span class="comment"># python 3</span></span><br><span class="line">    <span class="keyword">if</span> not isinstance(output, str):</span><br><span class="line">        output = output.decode(<span class="string">'utf-8'</span>)</span><br><span class="line">    lines = output.split(os.linesep)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> lines:</span><br><span class="line">        tokens = line.split(<span class="string">" "</span>)</span><br><span class="line">        <span class="keyword">if</span> tokens[0] == <span class="string">"VALUE:"</span>:</span><br><span class="line">            <span class="built_in">return</span> <span class="string">" "</span>.join(tokens[1:])</span><br><span class="line">    <span class="built_in">return</span> <span class="string">""</span></span><br></pre></td></tr></table></figure></p>
+<p>其中sub.Popen是启动一个子进程，执行command命令，而command数组实际上是执行backtype.storm.command.config_value这个类，并将传入的ui.childopts作为参数。<br>config_value类的路径为：src/clj/backtype/storm/command/config_value.clj<br>config_value.clj的代码如下：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> -main [<span class="comment">^String</span> name]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [conf (<span class="name">read-storm-config</span>)]</span><br><span class="line">    (<span class="name">println</span> <span class="string">"VALUE:"</span> (<span class="name">conf</span> name))</span><br><span class="line">    ))</span><br></pre></td></tr></table></figure></p>
+<p>因此，实际上就是读取storm的配置文件storm.conf，并得到ui.childopts参数。默认的ui.childopts参数是”-Xmx768m”，设置虚拟机内存堆的最大可用大小为768M.</p>
+<p>因此<strong>UI进程启动的顺序</strong>为：</p>
+<ol>
+<li>先调用<strong>backtype.storm.command.config_value</strong>获取读取到的配置文件中的ui启动项；</li>
+<li>然后执行java命令行参数后调用<strong>backtype.storm.ui.core</strong>启动UI进程。</li>
+</ol>
+<p>其中配置文件中可以配置的UI参数如下（定义在src/jvm/backtype/storm/Config.java）：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Childopts for Storm UI Java process.</span></span><br><span class="line"><span class="keyword">static</span> String	UI_CHILDOPTS</span><br><span class="line"></span><br><span class="line"><span class="comment">//A class implementing javax.servlet.Filter for authenticating/filtering UI requests</span></span><br><span class="line"><span class="keyword">static</span> String	UI_FILTER</span><br><span class="line"></span><br><span class="line"><span class="comment">//Initialization parameters for the javax.servlet.Filter</span></span><br><span class="line"><span class="keyword">static</span> String	UI_FILTER_PARAMS</span><br><span class="line"></span><br><span class="line"><span class="comment">//The size of the header buffer for the UI in bytes</span></span><br><span class="line"><span class="keyword">static</span> String	UI_HEADER_BUFFER_BYTES</span><br><span class="line"></span><br><span class="line"><span class="comment">//Storm UI binds to this host/interface.</span></span><br><span class="line"><span class="keyword">static</span> String	UI_HOST</span><br><span class="line"></span><br><span class="line"><span class="comment">//Class name of the HTTP credentials plugin for the UI.</span></span><br><span class="line"><span class="keyword">static</span> String	UI_HTTP_CREDS_PLUGIN</span><br><span class="line"></span><br><span class="line"><span class="comment">//Storm UI binds to this port.</span></span><br><span class="line"><span class="keyword">static</span> String	UI_PORT</span><br></pre></td></tr></table></figure></p>
+<h2 id="backtype-storm-ui-core"><a href="#backtype-storm-ui-core" class="headerlink" title="backtype.storm.ui.core"></a><strong>backtype.storm.ui.core</strong></h2><p>这一节看一下src/backtype/storm/ui/core.clj这个文件的主要功能（其中部分关于jetty服务器配置的函数定义在ui/helper.clj文件中）：</p>
+<p><strong>backtype.storm.ui.core的主要功能是定义并启动一个jetty服务器，用于实现所有API的响应并返回json数据。</strong></p>
+<p>首先看main函数， 就是调用start-server! 函数（clojure中！表示函数是突变函数，表示方法或宏不能在STM中安全使用）：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> -main [] (<span class="name">start-server!</span>))</span><br></pre></td></tr></table></figure></p>
+<p>start-server！函数定义如下：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> start-server!</span><br><span class="line">  []</span><br><span class="line">  (<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [conf *STORM-CONF*</span><br><span class="line">          header-buffer-size (<span class="name"><span class="builtin-name">int</span></span> (<span class="name">.get</span> conf UI-HEADER-BUFFER-BYTES))</span><br><span class="line">          filters-confs [&#123;<span class="symbol">:filter-class</span> (<span class="name">conf</span> UI-FILTER)</span><br><span class="line">                          <span class="symbol">:filter-params</span> (<span class="name">conf</span> UI-FILTER-PARAMS)&#125;]</span><br><span class="line">          https-port (<span class="name"><span class="builtin-name">if</span></span> (<span class="name">not-nil?</span> (<span class="name">conf</span> UI-HTTPS-PORT)) (<span class="name">conf</span> UI-HTTPS-PORT) <span class="number">0</span>)</span><br><span class="line">          https-ks-path (<span class="name">conf</span> UI-HTTPS-KEYSTORE-PATH)</span><br><span class="line">          https-ks-password (<span class="name">conf</span> UI-HTTPS-KEYSTORE-PASSWORD)</span><br><span class="line">          https-ks-type (<span class="name">conf</span> UI-HTTPS-KEYSTORE-TYPE)</span><br><span class="line">          https-key-password (<span class="name">conf</span> UI-HTTPS-KEY-PASSWORD)</span><br><span class="line">          https-ts-path (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-PATH)</span><br><span class="line">          https-ts-password (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-PASSWORD)</span><br><span class="line">          https-ts-type (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-TYPE)</span><br><span class="line">          https-want-client-auth (<span class="name">conf</span> UI-HTTPS-WANT-CLIENT-AUTH)</span><br><span class="line">          https-need-client-auth (<span class="name">conf</span> UI-HTTPS-NEED-CLIENT-AUTH)]</span><br><span class="line">      (<span class="name">storm-run-jetty</span> &#123;<span class="symbol">:port</span> (<span class="name">conf</span> UI-PORT)</span><br><span class="line">                        <span class="symbol">:host</span> (<span class="name">conf</span> UI-HOST)</span><br><span class="line">                        <span class="symbol">:https-port</span> https-port</span><br><span class="line">                        <span class="symbol">:configurator</span> (<span class="name"><span class="builtin-name">fn</span></span> [server]</span><br><span class="line">                                        (<span class="name">config-ssl</span> server</span><br><span class="line">                                                    https-port</span><br><span class="line">                                                    https-ks-path</span><br><span class="line">                                                    https-ks-password</span><br><span class="line">                                                    https-ks-type</span><br><span class="line">                                                    https-key-password</span><br><span class="line">                                                    https-ts-path</span><br><span class="line">                                                    https-ts-password</span><br><span class="line">                                                    https-ts-type</span><br><span class="line">                                                    https-need-client-auth</span><br><span class="line">                                                    https-want-client-auth)</span><br><span class="line">                                        (<span class="name"><span class="builtin-name">doseq</span></span> [connector (<span class="name">.getConnectors</span> server)]</span><br><span class="line">                                          (<span class="name">.setRequestHeaderSize</span> connector header-buffer-size))</span><br><span class="line">                                        (<span class="name">config-filter</span> server app filters-confs))&#125;))</span><br><span class="line">   (<span class="name">catch</span> Exception ex</span><br><span class="line">     (<span class="name">log-error</span> ex))))</span><br></pre></td></tr></table></figure></p>
+<p>首先从conf配置项中取出http的相应参数，然后将这些配置项封装为map作为参数去调用<strong>storm-run-jetty</strong>函数(helper.clj)，参数有:port，:host，:https-port，:configurator。storm-run-jetty函数定义如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">;; Modified from ring.adapter.jetty 1.3.0</span><br><span class="line">(defn- jetty-create-server</span><br><span class="line">  "Construct a Jetty Server instance."</span><br><span class="line">  [options]</span><br><span class="line">  (let [connector (doto (SelectChannelConnector.)</span><br><span class="line">                    (.setPort (options :port 80))</span><br><span class="line">                    (.setHost (options :host))</span><br><span class="line">                    (.setMaxIdleTime (options :max-idle-time 200000)))</span><br><span class="line">        server    (doto (Server.)</span><br><span class="line">                    (.addConnector connector)</span><br><span class="line">                    (.setSendDateHeader true))</span><br><span class="line">        https-port (options :https-port)]</span><br><span class="line">    (if (and (not-nil? https-port) (&gt; https-port 0)) (remove-non-ssl-connectors server))</span><br><span class="line">    server))</span><br><span class="line"></span><br><span class="line">(defn storm-run-jetty</span><br><span class="line">  "Modified version of run-jetty</span><br><span class="line">  Assumes configurator sets handler."</span><br><span class="line">  [config]</span><br><span class="line">  &#123;:pre [(:configurator config)]&#125;</span><br><span class="line">  (let [#^Server s (jetty-create-server (dissoc config :configurator))</span><br><span class="line">        configurator (:configurator config)]</span><br><span class="line">    (configurator s)</span><br><span class="line">    (.start s)))</span><br></pre></td></tr></table></figure>
+<p><strong>storm-run-jetty的运行流程</strong>：</p>
+<ol>
+<li><p>传入参数为：:port，:host，:https-port，:configurator。 其中:configurator是在start-server!中定义的参数，返回的是如下的函数，该函数首先利用https的传入参数初始化一个ssl connector，并将其添加到server中。然后对server中的每一个connector，设置HTTP请求头的buffer size，设置server的过滤器，再设置server的handle为app，主要通过config-filter函数(helper.clj)实现。。</p>
+ <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">fn</span></span> [server]</span><br><span class="line">           (<span class="name">config-ssl</span> server</span><br><span class="line">                       https-port</span><br><span class="line">                       https-ks-path</span><br><span class="line">                       https-ks-password</span><br><span class="line">                       https-ks-type</span><br><span class="line">                       https-key-password</span><br><span class="line">                       https-ts-path</span><br><span class="line">                       https-ts-password</span><br><span class="line">                       https-ts-type</span><br><span class="line">                       https-need-client-auth</span><br><span class="line">                       https-want-client-auth)</span><br><span class="line">           (<span class="name"><span class="builtin-name">doseq</span></span> [connector (<span class="name">.getConnectors</span> server)]</span><br><span class="line">             (<span class="name">.setRequestHeaderSize</span> connector header-buffer-size))</span><br><span class="line">           (<span class="name">config-filter</span> server app filters-confs))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在storm-run-jetty函数中首先调用jetty-create-server函数来创建一个jetty服务器对象：</p>
+<ul>
+<li>传入的参数为:port，:host，:https-port 。</li>
+<li>首先初始化一个SelectChannelConnector，设置端口（默认为80），设置host， 设置最大空闲时间（默认为200000ms），然后初始化一个Server， 添加连接器Connector，设置Http Header中发送日期。然后判断参数中是否存在https端口，如果存在的话，将Server中的所有不是SslSocketConnector实例的连接器删除。</li>
+<li>返回server</li>
+</ul>
+</li>
+<li>然后从storm-run-jetty函数参数中取出configurator函数，配置server对象，添加https连接器和过滤器，设置handle；</li>
+<li>最后启动服务器server.start()。 </li>
+</ol>
+<p>storm中的jetty服务器的<strong>handle的实现</strong>是借助于Clojure中的web开发框架ring及其routing库Compojure来实现的，主要通过以下app代码来实现。即首先对<strong>main-routes路由函数</strong>（后面介绍）添加中间件：包括request参数json化，parse multipart， 在发送request前重载namespace；捕捉错误并json化，然后作为参数调用handler/site函数；</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> app</span><br><span class="line">  (<span class="name">handler/site</span> (<span class="name"><span class="builtin-name">-&gt;</span></span> main-routes</span><br><span class="line">                    (<span class="name">wrap-json-params</span>)</span><br><span class="line">                    (<span class="name">wrap-multipart-params</span>)</span><br><span class="line">                    (<span class="name">wrap-reload</span> '[backtype.storm.ui.core])</span><br><span class="line">                    catch-errors)))</span><br></pre></td></tr></table></figure>
+<p><strong>compojure.handler.site函数</strong>的功能为：传入route函数，添加中间件，返回handle。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Create a handler suitable <span class="keyword">for</span> a standard website. This adds the</span><br><span class="line">following middleware to your routes:</span><br><span class="line">  - wrap-session</span><br><span class="line">  - wrap-flash</span><br><span class="line">  - wrap-cookies</span><br><span class="line">  - wrap-multipart-params</span><br><span class="line">  - wrap-params</span><br><span class="line">  - wrap-nested-params</span><br><span class="line">  - wrap-keyword-params</span><br></pre></td></tr></table></figure>
+<p>因此最后得到的app是一个handle。将app作为config-filter的参数执行以下代码：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> config-filter [server handler filters-confs]</span><br><span class="line">  (<span class="name"><span class="builtin-name">if</span></span> filters-confs</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [servlet-holder (<span class="name">ServletHolder.</span></span><br><span class="line">                           (<span class="name">ring.util.servlet/servlet</span> handler))</span><br><span class="line">          context (<span class="name"><span class="builtin-name">doto</span></span> (<span class="name">org.eclipse.jetty.servlet.ServletContextHandler.</span> server <span class="string">"/"</span>)</span><br><span class="line">                    (<span class="name">.addServlet</span> servlet-holder <span class="string">"/"</span>))]</span><br><span class="line">      (<span class="name">.addFilter</span> context (<span class="name">cors-filter-handler</span>) <span class="string">"/*"</span> (<span class="name">EnumSet/allOf</span> DispatcherType))</span><br><span class="line">      (<span class="name"><span class="builtin-name">doseq</span></span> [&#123;<span class="symbol">:keys</span> [filter-name filter-class filter-params]&#125; filters-confs]</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> filter-class</span><br><span class="line">          (<span class="name"><span class="builtin-name">let</span></span> [filter-holder (<span class="name"><span class="builtin-name">doto</span></span> (<span class="name">org.eclipse.jetty.servlet.FilterHolder.</span>)</span><br><span class="line">                                (<span class="name">.setClassName</span> filter-class)</span><br><span class="line">                                (<span class="name">.setName</span> (<span class="name"><span class="builtin-name">or</span></span> filter-name filter-class))</span><br><span class="line">                                (<span class="name">.setInitParameters</span> (<span class="name"><span class="builtin-name">or</span></span> filter-params &#123;&#125;)))]</span><br><span class="line">            (<span class="name">.addFilter</span> context filter-holder <span class="string">"/*"</span> FilterMapping/ALL))))</span><br><span class="line">      (<span class="name">.setHandler</span> server context))))</span><br></pre></td></tr></table></figure></p>
+<p>这段代码的前面主要是添加filter。关键的最后一句server.setHandler(context) 函数会将前面得到的app作为jetty服务器的handle。这里注意：虽然默认的filters-confs参数是 <strong>{:filter-class  nil, :filter-params nil}</strong>，但其并不是nil，所以<strong>if filters-confs</strong>为true。</p>
+<p>最后再来看一下main-routes函数，其定义如下。这是ring框架提供的macro定义，主要定义了<strong>不同API路径的请求处理和响应返回</strong>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">defroutes</span> main-routes</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/cluster/configuration"</span> [&amp; m]</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">cluster-configuration</span>)</span><br><span class="line">                   (<span class="symbol">:callback</span> m) <span class="symbol">:serialize-fn</span> identity))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/cluster/summary"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getClusterInfo"</span>)</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [user (<span class="name">get-user-name</span> servlet-request)]</span><br><span class="line">      (<span class="name">json-response</span> (<span class="name">cluster-summary</span> user) (<span class="symbol">:callback</span> m))))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/supervisor/summary"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getClusterInfo"</span>)</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">supervisor-summary</span>) (<span class="symbol">:callback</span> m)))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/topology/summary"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getClusterInfo"</span>)</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">all-topologies-summary</span>) (<span class="symbol">:callback</span> m)))</span><br><span class="line">  (<span class="name">GET</span>  <span class="string">"/api/v1/topology/:id"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request scheme params]&#125; id &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getTopology"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [user (<span class="name">.getUserName</span> http-creds-handler servlet-request)]</span><br><span class="line">      (<span class="name">json-response</span> (<span class="name">topology-page</span> id (<span class="symbol">:window</span> m) (<span class="name">check-include-sys?</span> (<span class="symbol">:sys</span> m)) user (<span class="name"><span class="builtin-name">=</span></span> scheme <span class="symbol">:https</span>)) (<span class="symbol">:callback</span> m))))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/topology/:id/visualization"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; id &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getTopology"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">mk-visualization-data</span> id (<span class="symbol">:window</span> m) (<span class="name">check-include-sys?</span> (<span class="symbol">:sys</span> m))) (<span class="symbol">:callback</span> m)))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/api/v1/topology/:id/component/:component"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request scheme]&#125; id component &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"getTopology"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [user (<span class="name">.getUserName</span> http-creds-handler servlet-request)]</span><br><span class="line">      (<span class="name">json-response</span> (<span class="name">component-page</span> id component (<span class="symbol">:window</span> m) (<span class="name">check-include-sys?</span> (<span class="symbol">:sys</span> m)) user (<span class="name"><span class="builtin-name">=</span></span> scheme <span class="symbol">:https</span>)) (<span class="symbol">:callback</span> m))))</span><br><span class="line">  (<span class="name">POST</span> <span class="string">"/api/v1/topology/:id/activate"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; id &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"activate"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name">with-nimbus</span> nimbus</span><br><span class="line">       (<span class="name"><span class="builtin-name">let</span></span> [tplg (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name"><span class="builtin-name">doto</span></span></span><br><span class="line">                        (<span class="name">GetInfoOptions.</span>)</span><br><span class="line">                        (<span class="name">.set_num_err_choice</span> NumErrorsChoice/NONE))</span><br><span class="line">                      (<span class="name">.getTopologyInfoWithOpts</span> <span class="comment">^Nimbus</span>$Client nimbus id))</span><br><span class="line">            name (<span class="name">.get_name</span> tplg)]</span><br><span class="line">        (<span class="name">.activate</span> nimbus name)</span><br><span class="line">        (<span class="name">log-message</span> <span class="string">"Activating topology '"</span> name <span class="string">"'"</span>)))</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">topology-op-response</span> id <span class="string">"activate"</span>) (<span class="name">m</span> <span class="string">"callback"</span>)))</span><br><span class="line">  (<span class="name">POST</span> <span class="string">"/api/v1/topology/:id/deactivate"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; id &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"deactivate"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name">with-nimbus</span> nimbus</span><br><span class="line">        (<span class="name"><span class="builtin-name">let</span></span> [tplg (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name"><span class="builtin-name">doto</span></span></span><br><span class="line">                        (<span class="name">GetInfoOptions.</span>)</span><br><span class="line">                        (<span class="name">.set_num_err_choice</span> NumErrorsChoice/NONE))</span><br><span class="line">                      (<span class="name">.getTopologyInfoWithOpts</span> <span class="comment">^Nimbus</span>$Client nimbus id))</span><br><span class="line">            name (<span class="name">.get_name</span> tplg)]</span><br><span class="line">        (<span class="name">.deactivate</span> nimbus name)</span><br><span class="line">        (<span class="name">log-message</span> <span class="string">"Deactivating topology '"</span> name <span class="string">"'"</span>)))</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">topology-op-response</span> id <span class="string">"deactivate"</span>) (<span class="name">m</span> <span class="string">"callback"</span>)))</span><br><span class="line">  (<span class="name">POST</span> <span class="string">"/api/v1/topology/:id/rebalance/:wait-time"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; id wait-time &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"rebalance"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name">with-nimbus</span> nimbus</span><br><span class="line">      (<span class="name"><span class="builtin-name">let</span></span> [tplg (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name"><span class="builtin-name">doto</span></span></span><br><span class="line">                        (<span class="name">GetInfoOptions.</span>)</span><br><span class="line">                        (<span class="name">.set_num_err_choice</span> NumErrorsChoice/NONE))</span><br><span class="line">                      (<span class="name">.getTopologyInfoWithOpts</span> <span class="comment">^Nimbus</span>$Client nimbus id))</span><br><span class="line">            name (<span class="name">.get_name</span> tplg)</span><br><span class="line">            rebalance-options (<span class="name">m</span> <span class="string">"rebalanceOptions"</span>)</span><br><span class="line">            options (<span class="name">RebalanceOptions.</span>)]</span><br><span class="line">        (<span class="name">.set_wait_secs</span> options (<span class="name">Integer/parseInt</span> wait-time))</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">and</span></span> (<span class="name">not-nil?</span> rebalance-options) (<span class="name"><span class="builtin-name">contains?</span></span> rebalance-options <span class="string">"numWorkers"</span>))</span><br><span class="line">          (<span class="name">.set_num_workers</span> options (<span class="name">Integer/parseInt</span> (<span class="name">.toString</span> (<span class="name">rebalance-options</span> <span class="string">"numWorkers"</span>)))))</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">and</span></span> (<span class="name">not-nil?</span> rebalance-options) (<span class="name"><span class="builtin-name">contains?</span></span> rebalance-options <span class="string">"executors"</span>))</span><br><span class="line">          (<span class="name"><span class="builtin-name">doseq</span></span> [keyval (<span class="name">rebalance-options</span> <span class="string">"executors"</span>)]</span><br><span class="line">            (<span class="name">.put_to_num_executors</span> options (<span class="name"><span class="builtin-name">key</span></span> keyval) (<span class="name">Integer/parseInt</span> (<span class="name">.toString</span> (<span class="name"><span class="builtin-name">val</span></span> keyval))))))</span><br><span class="line">        (<span class="name">.rebalance</span> nimbus name options)</span><br><span class="line">        (<span class="name">log-message</span> <span class="string">"Rebalancing topology '"</span> name <span class="string">"' with wait time: "</span> wait-time <span class="string">" secs"</span>)))</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">topology-op-response</span> id <span class="string">"rebalance"</span>) (<span class="name">m</span> <span class="string">"callback"</span>)))</span><br><span class="line">  (<span class="name">POST</span> <span class="string">"/api/v1/topology/:id/kill/:wait-time"</span> [<span class="symbol">:as</span> &#123;<span class="symbol">:keys</span> [cookies servlet-request]&#125; id wait-time &amp; m]</span><br><span class="line">    (<span class="name">populate-context!</span> servlet-request)</span><br><span class="line">    (<span class="name">assert-authorized-user</span> <span class="string">"killTopology"</span> (<span class="name">topology-config</span> id))</span><br><span class="line">    (<span class="name">with-nimbus</span> nimbus</span><br><span class="line">      (<span class="name"><span class="builtin-name">let</span></span> [tplg (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name"><span class="builtin-name">doto</span></span></span><br><span class="line">                        (<span class="name">GetInfoOptions.</span>)</span><br><span class="line">                        (<span class="name">.set_num_err_choice</span> NumErrorsChoice/NONE))</span><br><span class="line">                      (<span class="name">.getTopologyInfoWithOpts</span> <span class="comment">^Nimbus</span>$Client nimbus id))</span><br><span class="line">            name (<span class="name">.get_name</span> tplg)</span><br><span class="line">            options (<span class="name">KillOptions.</span>)]</span><br><span class="line">        (<span class="name">.set_wait_secs</span> options (<span class="name">Integer/parseInt</span> wait-time))</span><br><span class="line">        (<span class="name">.killTopologyWithOpts</span> nimbus name options)</span><br><span class="line">        (<span class="name">log-message</span> <span class="string">"Killing topology '"</span> name <span class="string">"' with wait time: "</span> wait-time <span class="string">" secs"</span>)))</span><br><span class="line">    (<span class="name">json-response</span> (<span class="name">topology-op-response</span> id <span class="string">"kill"</span>) (<span class="name">m</span> <span class="string">"callback"</span>)))</span><br><span class="line">  (<span class="name">GET</span> <span class="string">"/"</span> [<span class="symbol">:as</span> &#123;cookies <span class="symbol">:cookies</span>&#125;]</span><br><span class="line">    (<span class="name">resp/redirect</span> <span class="string">"/index.html"</span>))</span><br><span class="line">  (<span class="name">route/resources</span> <span class="string">"/"</span>)</span><br><span class="line">  (<span class="name">route/not-found</span> <span class="string">"Page not found"</span>))</span><br></pre></td></tr></table></figure>
+<p>其中：</p>
+<ul>
+<li>json-response函数用于将得到的response转换为json格式；</li>
+<li>populate-context!函数用于将servlet-request对象转换为storm的RequestContext对象，即backtype.storm.security.auth.ReqContext （src/jvm/backtype/storm/security/auth/ReqContext.java），主要是用于添加用户认证的插件，插件只需要实现IHttpCredentialsPlugin接口即可。没有做详细了解。</li>
+<li>assert-authorized-user也是验证用户操作权限的；</li>
+<li><p>with-nimbus是一个宏，用于建立一个与thrift server的客户端连接，代码如下, 首先初始化一个ReqContext上下文对象，获取用户名，然后与storm thirift server建立连接，执行body所代表的操作。<strong>其中nimbus-sym是一个符号参数，其会在with-nimbus-connection-as-user中被赋值为NimbusClient对象，用于在执行body代码是作为参数；</strong></p>
+  <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; src/clj/backtype/storm/ui/core.clj</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defmacro</span></span> with-nimbus</span><br><span class="line">  [nimbus-sym &amp; body]</span><br><span class="line">  `(<span class="name"><span class="builtin-name">let</span></span> [context# (<span class="name">ReqContext/context</span>)</span><br><span class="line">         user# (<span class="name"><span class="builtin-name">if</span></span> (<span class="name">.principal</span> context#) (<span class="name">.getName</span> (<span class="name">.principal</span> context#)))]</span><br><span class="line">    (<span class="name">thrift/with-nimbus-connection-as-user</span></span><br><span class="line">       [~nimbus-sym (<span class="name">*STORM-CONF*</span> NIMBUS-HOST) (<span class="name">*STORM-CONF*</span> NIMBUS-THRIFT-PORT) user#]</span><br><span class="line">       ~@body)))</span><br><span class="line"></span><br><span class="line"><span class="comment">;; src/clj/backtype/storm/thrift.clj</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defmacro</span></span> with-nimbus-connection-as-user</span><br><span class="line">  [[client-sym host port as-user] &amp; body]</span><br><span class="line">  `(<span class="name"><span class="builtin-name">let</span></span> [[<span class="comment">^Nimbus</span>$Client ~client-sym <span class="comment">^TTransport</span> conn#] (<span class="name">nimbus-client-and-conn</span> ~host ~port ~as-user)]</span><br><span class="line">     (<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">       ~@body</span><br><span class="line">       (<span class="name">finally</span> (<span class="name">.close</span> conn#)))))</span><br></pre></td></tr></table></figure>
+<p>  比如<strong>active API</strong>的代码如下：在建立与服务器的连接后得到了<strong>NimbusCilent对象nimbus</strong>，调用其.getTopologyInfoWithOpts函数，得到TopologyInfo 对象，进而得到topology name，然后调用active方法激活topology；</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">with-nimbus</span> nimbus</span><br><span class="line">       (<span class="name"><span class="builtin-name">let</span></span> [tplg (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name"><span class="builtin-name">doto</span></span></span><br><span class="line">                        (<span class="name">GetInfoOptions.</span>)</span><br><span class="line">                        (<span class="name">.set_num_err_choice</span> NumErrorsChoice/NONE))</span><br><span class="line">                      (<span class="name">.getTopologyInfoWithOpts</span> <span class="comment">^Nimbus</span>$Client nimbus id))</span><br><span class="line">            name (<span class="name">.get_name</span> tplg)]</span><br><span class="line">        (<span class="name">.activate</span> nimbus name)</span><br><span class="line">        (<span class="name">log-message</span> <span class="string">"Activating topology '"</span> name <span class="string">"'"</span>)))</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>note：jetty服务器API是org.eclipse.jetty.server这个包提供的。</p>
+<p>至此整个UI进程的启动和运行过程已经解析完毕。下一步是解析UI界面上的数据来源。 请参考下一篇博客。</p>
+<p><br> <br><br><br></p>
+<hr>
+<p><strong>转载请标明文章出处。本文内容为实践后的原创整理，如果侵犯了您的版权，请联系我进行删除，邮件：yanhealth@163.com</strong></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/集群技术/">集群技术</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/storm/">storm</a><a href="/tags/UI/">UI</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-uicode-1/" data-title="Storm 源码分析——UI界面显示代码分析（上） | Yan Jiankang&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2016/04/07/Storm-sourcecode-analize-tools/"  title="Storm 源码分析——工具篇">
+ <strong>下一篇：</strong><br/> 
+ <span>Storm 源码分析——工具篇
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/04/07/Storm-sourcecode-uicode-1/" data-title="Storm 源码分析——UI界面显示代码分析（上）" data-url="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-uicode-1/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#UI进程的启动"><span class="toc-number">1.</span> <span class="toc-text">UI进程的启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#backtype-storm-ui-core"><span class="toc-number">2.</span> <span class="toc-text">backtype.storm.ui.core</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="healthyjk" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Linux配置/" title="Linux配置">Linux配置<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/流媒体技术/" title="流媒体技术">流媒体技术<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/生活杂记/" title="生活杂记">生活杂记<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件工程/" title="软件工程">软件工程<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/集群技术/" title="集群技术">集群技术<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/storm/" title="storm">storm<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/zookeeper/" title="zookeeper">zookeeper<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/rtsp/" title="rtsp">rtsp<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/kafka/" title="kafka">kafka<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/clojure/" title="clojure">clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ubuntu/" title="ubuntu">ubuntu<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并行度/" title="并行度">并行度<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/idea/" title="idea">idea<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Clojure/" title="Clojure">Clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/cursive/" title="cursive">cursive<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Jiankang Yan in Fudan. <br/>
+			This is my github blog, Welcome.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/yanhealth" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/healthyjk" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
+		
+		<a href="/about" target="_blank" title="Jiankang Yan">Jiankang Yan</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"yanjiankang"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
