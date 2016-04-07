@@ -17,8 +17,8 @@
   
   <entry>
     <title>Storm 源码分析——UI界面显示代码分析（上）</title>
-    <link href="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-uicode-1/"/>
-    <id>http://yanjiankang.cn/2016/04/07/Storm-sourcecode-uicode-1/</id>
+    <link href="http://yanjiankang.cn/Storm-sourcecode-uicode-1/"/>
+    <id>http://yanjiankang.cn/Storm-sourcecode-uicode-1/</id>
     <published>2016-04-07T08:12:59.865Z</published>
     <updated>2016-04-03T16:46:49.105Z</updated>
     
@@ -104,8 +104,8 @@
   
   <entry>
     <title>Storm 源码分析——工具篇</title>
-    <link href="http://yanjiankang.cn/2016/04/07/Storm-sourcecode-analize-tools/"/>
-    <id>http://yanjiankang.cn/2016/04/07/Storm-sourcecode-analize-tools/</id>
+    <link href="http://yanjiankang.cn/Storm-sourcecode-analize-tools/"/>
+    <id>http://yanjiankang.cn/Storm-sourcecode-analize-tools/</id>
     <published>2016-04-07T08:12:59.864Z</published>
     <updated>2016-02-02T12:24:13.000Z</updated>
     
@@ -187,8 +187,8 @@
   
   <entry>
     <title>Storm源码阅读学习笔记之一(待整理)</title>
-    <link href="http://yanjiankang.cn/2016/04/07/storm-source-study-note-01/"/>
-    <id>http://yanjiankang.cn/2016/04/07/storm-source-study-note-01/</id>
+    <link href="http://yanjiankang.cn/storm-source-study-note-01/"/>
+    <id>http://yanjiankang.cn/storm-source-study-note-01/</id>
     <published>2016-04-07T08:12:59.862Z</published>
     <updated>2015-12-28T08:56:42.000Z</updated>
     
@@ -400,8 +400,8 @@
   
   <entry>
     <title>Storm并行度详解</title>
-    <link href="http://yanjiankang.cn/2016/04/07/Storm-introduce-parallism/"/>
-    <id>http://yanjiankang.cn/2016/04/07/Storm-introduce-parallism/</id>
+    <link href="http://yanjiankang.cn/Storm-introduce-parallism/"/>
+    <id>http://yanjiankang.cn/Storm-introduce-parallism/</id>
     <published>2016-04-07T08:12:59.861Z</published>
     <updated>2015-08-06T03:44:38.000Z</updated>
     
@@ -465,8 +465,8 @@
   
   <entry>
     <title>采集rtsp流摄像头到浏览器实时播放方案</title>
-    <link href="http://yanjiankang.cn/2016/04/07/rtsp_camera_to_web_browser/"/>
-    <id>http://yanjiankang.cn/2016/04/07/rtsp_camera_to_web_browser/</id>
+    <link href="http://yanjiankang.cn/rtsp_camera_to_web_browser/"/>
+    <id>http://yanjiankang.cn/rtsp_camera_to_web_browser/</id>
     <published>2016-04-07T08:12:59.859Z</published>
     <updated>2015-05-15T09:03:20.000Z</updated>
     
@@ -558,8 +558,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>python中列表删除满足条件元素的方法</title>
-    <link href="http://yanjiankang.cn/2016/04/07/python_list_delete_element/"/>
-    <id>http://yanjiankang.cn/2016/04/07/python_list_delete_element/</id>
+    <link href="http://yanjiankang.cn/python_list_delete_element/"/>
+    <id>http://yanjiankang.cn/python_list_delete_element/</id>
     <published>2016-04-07T08:12:59.858Z</published>
     <updated>2015-08-05T07:58:54.000Z</updated>
     
@@ -596,8 +596,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>OpenCV  Java API 读取 RTSP 摄像头</title>
-    <link href="http://yanjiankang.cn/2016/04/07/OpenCV%20-Java-API-%20Read-RTSP-Camera/"/>
-    <id>http://yanjiankang.cn/2016/04/07/OpenCV -Java-API- Read-RTSP-Camera/</id>
+    <link href="http://yanjiankang.cn/OpenCV%20-Java-API-%20Read-RTSP-Camera/"/>
+    <id>http://yanjiankang.cn/OpenCV -Java-API- Read-RTSP-Camera/</id>
     <published>2016-04-07T08:12:59.856Z</published>
     <updated>2016-01-27T01:29:38.000Z</updated>
     
@@ -645,8 +645,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>Linux 编译安装 OpenCV (Ubuntu, Redhat)</title>
-    <link href="http://yanjiankang.cn/2016/04/07/Linux-install-OpenCV-on-Ubuntu-or-Redhat/"/>
-    <id>http://yanjiankang.cn/2016/04/07/Linux-install-OpenCV-on-Ubuntu-or-Redhat/</id>
+    <link href="http://yanjiankang.cn/Linux-install-OpenCV-on-Ubuntu-or-Redhat/"/>
+    <id>http://yanjiankang.cn/Linux-install-OpenCV-on-Ubuntu-or-Redhat/</id>
     <published>2016-04-07T08:12:59.854Z</published>
     <updated>2016-01-27T01:28:10.000Z</updated>
     
@@ -689,20 +689,20 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="Linux配置" scheme="http://yanjiankang.cn/categories/Linux%E9%85%8D%E7%BD%AE/"/>
     
     
-      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
-    
       <category term="Linux" scheme="http://yanjiankang.cn/tags/Linux/"/>
     
       <category term="ubuntu" scheme="http://yanjiankang.cn/tags/ubuntu/"/>
     
       <category term="redhat" scheme="http://yanjiankang.cn/tags/redhat/"/>
     
+      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
+    
   </entry>
   
   <entry>
     <title>Kafka集群配置以及与Storm的spout集成</title>
-    <link href="http://yanjiankang.cn/2016/04/07/Kafka-install-config-storm-spout/"/>
-    <id>http://yanjiankang.cn/2016/04/07/Kafka-install-config-storm-spout/</id>
+    <link href="http://yanjiankang.cn/Kafka-install-config-storm-spout/"/>
+    <id>http://yanjiankang.cn/Kafka-install-config-storm-spout/</id>
     <published>2016-04-07T08:12:59.852Z</published>
     <updated>2015-10-21T05:16:06.000Z</updated>
     
@@ -790,9 +790,9 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="集群技术" scheme="http://yanjiankang.cn/categories/%E9%9B%86%E7%BE%A4%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="storm" scheme="http://yanjiankang.cn/tags/storm/"/>
-    
       <category term="kafka" scheme="http://yanjiankang.cn/tags/kafka/"/>
+    
+      <category term="storm" scheme="http://yanjiankang.cn/tags/storm/"/>
     
       <category term="zookeeper" scheme="http://yanjiankang.cn/tags/zookeeper/"/>
     
@@ -806,8 +806,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>2015-github博客-新的征程</title>
-    <link href="http://yanjiankang.cn/2016/04/07/first/"/>
-    <id>http://yanjiankang.cn/2016/04/07/first/</id>
+    <link href="http://yanjiankang.cn/first/"/>
+    <id>http://yanjiankang.cn/first/</id>
     <published>2016-04-07T08:12:59.851Z</published>
     <updated>2015-05-11T10:38:56.000Z</updated>
     
@@ -848,8 +848,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>LeetCode刷题--统计质数的方法</title>
-    <link href="http://yanjiankang.cn/2016/04/07/count_prime/"/>
-    <id>http://yanjiankang.cn/2016/04/07/count_prime/</id>
+    <link href="http://yanjiankang.cn/count_prime/"/>
+    <id>http://yanjiankang.cn/count_prime/</id>
     <published>2016-04-07T08:12:59.849Z</published>
     <updated>2015-06-08T03:06:10.000Z</updated>
     
@@ -899,8 +899,8 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
   
   <entry>
     <title>Actor 模型调研</title>
-    <link href="http://yanjiankang.cn/2016/04/07/actor-model-research/"/>
-    <id>http://yanjiankang.cn/2016/04/07/actor-model-research/</id>
+    <link href="http://yanjiankang.cn/actor-model-research/"/>
+    <id>http://yanjiankang.cn/actor-model-research/</id>
     <published>2016-04-07T08:12:59.848Z</published>
     <updated>2015-07-26T07:09:04.000Z</updated>
     

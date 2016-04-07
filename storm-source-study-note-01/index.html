@@ -1,0 +1,771 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Storm源码阅读学习笔记之一(待整理) | Yan Jiankang&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Jiankang Yan">
+    
+
+    
+    <meta name="description" content="宏 for 和 doseq 可以用来做 list comprehension. 它们支持遍历多个集合 ( 最右边的最快 ) ,同时还可以做一些过滤用 :when 和 :while 。 宏 for 只接受一个表达式 ,它返回一个懒惰集合作为结果 . 宏 doseq 接受任意数量的表达式 , 以有副作用的方式执行它们 , 并且返回 nil;
+
+$符号用于取代java包之间的点;
+
+定义zookeep">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Storm源码阅读学习笔记之一(待整理)">
+<meta property="og:url" content="http://yanjiankang.cn/storm-source-study-note-01/index.html">
+<meta property="og:site_name" content="Yan Jiankang's Blog">
+<meta property="og:description" content="宏 for 和 doseq 可以用来做 list comprehension. 它们支持遍历多个集合 ( 最右边的最快 ) ,同时还可以做一些过滤用 :when 和 :while 。 宏 for 只接受一个表达式 ,它返回一个懒惰集合作为结果 . 宏 doseq 接受任意数量的表达式 , 以有副作用的方式执行它们 , 并且返回 nil;
+
+$符号用于取代java包之间的点;
+
+定义zookeep">
+<meta property="og:updated_time" content="2015-12-28T08:56:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Storm源码阅读学习笔记之一(待整理)">
+<meta name="twitter:description" content="宏 for 和 doseq 可以用来做 list comprehension. 它们支持遍历多个集合 ( 最右边的最快 ) ,同时还可以做一些过滤用 :when 和 :while 。 宏 for 只接受一个表达式 ,它返回一个懒惰集合作为结果 . 宏 doseq 接受任意数量的表达式 , 以有副作用的方式执行它们 , 并且返回 nil;
+
+$符号用于取代java包之间的点;
+
+定义zookeep">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Yan Jiankang&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Yan Jiankang&#39;s Blog" title="Yan Jiankang&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Yan Jiankang&#39;s Blog">Yan Jiankang&#39;s Blog</a></h1>
+				<h2 class="blog-motto">博学之,审问之,慎思之,明辨之,笃行之</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:yanjiankang.cn">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/storm-source-study-note-01/" title="Storm源码阅读学习笔记之一(待整理)" itemprop="url">Storm源码阅读学习笔记之一(待整理)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Jiankang Yan" target="_blank" itemprop="author">Jiankang Yan</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-07T08:12:59.862Z" itemprop="datePublished"> 发表于 2016-04-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ol>
+<li><p>宏 for 和 doseq 可以用来做 list comprehension. 它们支持遍历多个集合 ( 最右边的最快 ) ,同时还可以做一些过滤用 :when 和 :while 。 宏 for 只接受一个表达式 ,它返回一个懒惰集合作为结果 . 宏 doseq 接受任意数量的表达式 , 以有副作用的方式执行它们 , 并且返回 nil;</p>
+</li>
+<li><p>$符号用于取代java包之间的点;</p>
+</li>
+<li><p>定义zookeeper的连接状态</p>
+ <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> zk-keeper-states</span><br><span class="line">&#123;Watcher$Event$KeeperState/Disconnected <span class="symbol">:disconnected</span></span><br><span class="line">Watcher$Event$KeeperState/SyncConnected <span class="symbol">:connected</span></span><br><span class="line">Watcher$Event$KeeperState/AuthFailed <span class="symbol">:auth-failed</span></span><br><span class="line">Watcher$Event$KeeperState/Expired <span class="symbol">:expired</span>&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义zookeeper监听事件类型</p>
+ <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> zk-event-types</span><br><span class="line">&#123;Watcher$Event$EventType/None <span class="symbol">:none</span></span><br><span class="line">Watcher$Event$EventType/NodeCreated <span class="symbol">:node-created</span></span><br><span class="line">Watcher$Event$EventType/NodeDeleted <span class="symbol">:node-deleted</span></span><br><span class="line">Watcher$Event$EventType/NodeDataChanged <span class="symbol">:node-data-changed</span></span><br><span class="line">Watcher$Event$EventType/NodeChildrenChanged <span class="symbol">:node-children-changed</span>&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>defn-定义私有函数</p>
+</li>
+<li><p>storm中广泛使用defnk: 和普通defn的不同是, 可以在参数里面使用k,v, 并且可以在函数体中直接使用k来得到value, 也可以在指定参数时给定k的默认值, 其实它的实现就是增加一个hashmap来存放这些k,v</p>
+</li>
+<li><p>storm中zookeeper.clj中采用Curator作为zookeeper的客户端连接, Curator是Netflix公司开源的一个Zookeeper客户端，与Zookeeper提供的原生客户端相比，Curator的抽象层次更高，简化了Zookeeper客户端的开发量。<br>backtype.storm.utils 中用java代码定义了newCurator的构造方法; </p>
+</li>
+<li><p>今天的工作主要是导入storm到eclipse中去,遇到很多问题;<br>When building a WAR with “lein ring uberwar” and if ring-servlet is only in the lib/dev directory but not in the lib directory, ring-servlet is not added to the WAR.When deploying the WAR, for instance on Jetty, one get the following error:<br>“Could not locate ring/util/servlet__init.class or ring/util/servlet.clj on classpath”.<br>A temporary work around is to explicitly adds [ring/ring-servlet “1.0.1”] to the list of dependencies in the project.clj.  我添加了ring-servlet到pom中,错误消失; </p>
+</li>
+<li><p>reify 用来 实现java的接口, 如下例所示:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">myJButton.addActionListener(<span class="keyword">new</span> ActionListener() &#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">actionPerformed</span><span class="params">(ActionEvent e)</span> </span>&#123;</span><br><span class="line">         <span class="comment">// do something here</span></span><br><span class="line">&#125; &#125;);</span><br></pre></td></tr></table></figure>
+ <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">.addActionListener</span> my-jbutton</span><br><span class="line">     (<span class="name"><span class="builtin-name">proxy</span></span> [ActionListener] []</span><br><span class="line">         (<span class="name">actionPerformed</span> [evt]</span><br><span class="line">             <span class="comment">;; (do something here)</span></span><br><span class="line">          ))) </span><br><span class="line"></span><br><span class="line">(<span class="name">.addActionListener</span> my-jbutton</span><br><span class="line">     (<span class="name"><span class="builtin-name">reify</span></span> ActionListener</span><br><span class="line">         (<span class="name">actionPerformed</span> [this evt]</span><br><span class="line">                 <span class="comment">;; (do something here)</span></span><br><span class="line">         )))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>“..” 是同时调用两个函数的简写: 即 方法调用可以用 .. 宏串起来; </p>
+</li>
+<li><p>Curator 框架事件类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Enum CuratorEventType : </span><br><span class="line">CHILDREN</span><br><span class="line">Corresponds to CuratorFramework.getChildren()</span><br><span class="line">CLOSING</span><br><span class="line">Event sent when client is being closed</span><br><span class="line">CREATE</span><br><span class="line">Corresponds to CuratorFramework.create()</span><br><span class="line">DELETE</span><br><span class="line">Corresponds to CuratorFramework.delete()</span><br><span class="line">EXISTS</span><br><span class="line">Corresponds to CuratorFramework.checkExists()</span><br><span class="line">GET_ACL</span><br><span class="line">Corresponds to CuratorFramework.getACL()</span><br><span class="line">GET_DATA</span><br><span class="line">Corresponds to CuratorFramework.getData()</span><br><span class="line">SET_ACL</span><br><span class="line">Corresponds to CuratorFramework.setACL()</span><br><span class="line">SET_DATA</span><br><span class="line">Corresponds to CuratorFramework.setData()</span><br><span class="line">SYNC</span><br><span class="line">Corresponds to CuratorFramework.sync(String, Object)</span><br><span class="line">WATCHED</span><br><span class="line">Corresponds to Watchable.usingWatcher(Watcher) or Watchable.watched()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Clojure 函数参数中可以使用^符号+参数类型来限定参数类型; </p>
+</li>
+<li><p>Clojure方法调用可以用 .. 宏串起来 并不是有几个串联调用的方法就需要几个点, 而是都是两个点； </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(.getLocation (.getCodeSource (.getProtectionDomain (.getClass '(1 2)))))</span><br><span class="line">可以缩写为</span><br><span class="line">(.. '(1 2) getClass getProtectionDomain getCodeSource getLocation)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Tips: Eclipse 中可以使用ctrl+H 进行整个项目的搜索,非常实用的功能；</p>
+</li>
+<li><p>Twitter Storm源代码分析之TimeCacheMap – 见另一篇笔记；</p>
+</li>
+<li><p>inimbus是一个接口, 主要实现方法为:查询调用可用slot, 分配slots, 获取supervisor的节点id, 获取调度器；</p>
+</li>
+<li><p>clojure cond宏: 接受一系列 test/expression 对， 它每次对一个 test 进行求值， 如果某个 test 返回 true ， 那么 cond 求值并返回与这个 test 相对应的expression ， 并且不再对其他 test 进行求值。如:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">    (defn type-of-number [n]</span><br><span class="line">               (cond (&gt; n 0) "positive number"</span><br><span class="line">                     (&lt; n 0) "negative number"</span><br><span class="line">                     :else "zero"))</span><br><span class="line">    ``` </span><br><span class="line">18. storm中使用到的语法符号-&gt;: </span><br><span class="line">-&gt;, (-&gt; x form &amp; more)</span><br><span class="line">线性化嵌套, 使其更具有可读性,  Inserts x as the second item in the first form ； 从下面的例子可以看出, 就是把第一个参数(x)作为最初的输入, 调用第二个参数(代表的fn), 然后拿返回值调用后续函数；和..用处差不多, 但..只能用于java调用；</span><br><span class="line">    ```clojure</span><br><span class="line">    (first (.split (.replace (.toUpperCase "a b c d") "A" "X") " "))</span><br><span class="line">    可以改写为:</span><br><span class="line">    (-&gt; "a b c d" </span><br><span class="line">    .toUpperCase </span><br><span class="line">    (.replace "A" "X") </span><br><span class="line">    (.split " ") </span><br><span class="line">    first)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus data 数据结构: 见nimbus.clj文件, 主要包括</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">    (defn nimbus-data [conf inimbus]</span><br><span class="line">        (let [forced-scheduler (.getForcedScheduler inimbus)]</span><br><span class="line">        &#123;:conf conf </span><br><span class="line">         :nimbus-host-port-info (NimbusInfo/fromConf conf)</span><br><span class="line">         :inimbus inimbus</span><br><span class="line">         :authorization-handler (mk-authorization-handler (conf NIMBUS-AUTHORIZER) conf)</span><br><span class="line">         :impersonation-authorization-handler (mk-authorization-handler (conf NIMBUS-IMPERSONATION-AUTHORIZER) conf)</span><br><span class="line">         :submitted-count (atom 0)</span><br><span class="line">         :storm-cluster-state (cluster/mk-storm-cluster-state conf :acls (when (Utils/isZkAuthenticationConfiguredStormServer conf) NIMBUS-ZK-ACLS))</span><br><span class="line">         :submit-lock (Object.)</span><br><span class="line">         :cred-update-lock (Object.)</span><br><span class="line">         :log-update-lock (Object.)</span><br><span class="line">         :heartbeats-cache (atom &#123;&#125;)</span><br><span class="line">         :downloaders (file-cache-map conf)</span><br><span class="line">         :uploaders (file-cache-map conf)</span><br><span class="line">         :uptime (uptime-computer)</span><br><span class="line">         :validator (new-instance (conf NIMBUS-TOPOLOGY-VALIDATOR))</span><br><span class="line">         :timer (mk-timer :kill-fn (fn [t]</span><br><span class="line">                                     (log-error t "Error when processing event")</span><br><span class="line">                                     (exit-process! 20 "Error when processing an event")</span><br><span class="line">                                     ))</span><br><span class="line">         :scheduler (mk-scheduler conf inimbus)</span><br><span class="line">         :leader-elector (zk-leader-elector conf)</span><br><span class="line">         :code-distributor (mk-code-distributor conf)</span><br><span class="line">         :id-&gt;sched-status (atom &#123;&#125;)</span><br><span class="line">         :cred-renewers (AuthUtils/GetCredentialRenewers conf)</span><br><span class="line">         :nimbus-autocred-plugins (AuthUtils/getNimbusAutoCredPlugins conf)</span><br><span class="line">         &#125;))</span><br><span class="line">    ``` </span><br><span class="line">20. **org.apache.commons.io.FileUtils** : forceMkdir方法: </span><br><span class="line">    public static void forceMkdir(File directory)</span><br><span class="line">                           throws IOException</span><br><span class="line">Makes a directory, including any necessary but nonexistent parent directories. If a file already exists with specified name but it is not a directory then an IOException is thrown. If the directory cannot be created (or does not already exist) then an IOException is thrown.</span><br><span class="line"></span><br><span class="line">21. **doseq** :  Repeatedly executes body (presumably for side-effects) with bindings and filtering as provided by "for". Does not retain the head of the sequence. Returns nil.</span><br><span class="line"></span><br><span class="line">22. clojure 中**symbol** :  Returns a Symbol with the given namespace and name. </span><br><span class="line"></span><br><span class="line">23. 宏 **defmulti** 和 **defmethod** 经常被用在一起来定义 multimethod. 宏 defmulti 的参数包括一个方法名以及一个 dispatch 函数,这个 dispatch 函数的返回值会被用来到底调用哪个重载的函数。宏 defmethod 的参数则包括方法名, dispatch 的值, 参数列表以及方法体。一个特殊的 dispatch 值 :default 是用来表示默认情况的 — 即如果其它的 dispatch 值都不匹配的话,那么就调用这个方法。 defmethod 多定义的名字一样的方法,它们的参数个数必须一样。传给multimethod 的参数会传给 dipatch 函数的。</span><br><span class="line"></span><br><span class="line">24. **-&gt;&gt; , (-&gt;&gt; x form &amp; more)**</span><br><span class="line">Inserts x as the last item in the first form 和-&gt;的差别在于x插入的位置不同, -&gt;是插入在第二个item, 即紧跟在函数名后面, 而-&gt;&gt;是插在最后一个item; </span><br><span class="line">    ```clojure</span><br><span class="line">    user=&gt; (-&gt;&gt; (range)</span><br><span class="line">                (map #(* % %))</span><br><span class="line">                (filter even?)</span><br><span class="line">                (take 10)</span><br><span class="line">                (reduce +))</span><br><span class="line">    等价于:</span><br><span class="line">    user=&gt; (reduce +</span><br><span class="line">           (take 10</span><br><span class="line">           (filter even?</span><br><span class="line">           (map #(* % %)</span><br><span class="line">           (range)))))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>backtype.storm.<strong>config</strong>.clj 文件中主要实现功能:  对conf参数内容进行提取,  backtype.storm.Config.java文件中定义了所有的storm可配置参数,同时定义serilization register；</p>
+</li>
+<li><p>Clojure 语法 : <strong>with-meta</strong>  (with-meta obj m)    Returns an object of the same type and value as obj, with  map m as its metadata.</p>
+</li>
+<li><p><strong>into, (into to from)</strong><br>把from join到to, 可以看到底下对于list, vector, set, 加完的顺序是不同的, 刚开始有些疑惑, 其实Into, 只是依次从from中把item读出, 并append到to里面, 最终的顺序不同因为数据结构对append的处理不同；</p>
+</li>
+<li><p><strong>‘() 是List, 类似于java里面的LinkedList, [] 是vector, #{} 可以定义set, {} 里面可以定义set；</strong></p>
+</li>
+<li><p><strong>merge</strong>, (merge &amp; maps) : 把多个map merge在一起, 如果有一样的key则latter优先原则, 后出现的优先;</p>
+</li>
+<li><p><strong>LocalState</strong> 定义了一个轻量级, 可持久化的KV 数据库, 它的效率不高,每次读写都要进行磁盘操作, 所以他一般只能用于读写次数不多的场景;</p>
+</li>
+<li><p>fn 定义匿名函数;</p>
+</li>
+<li><p>cluster.clj 文件中 <strong>ClusterState</strong>协议 定义了一系列用于对Zookeeper进行操作的方法; </p>
+</li>
+<li><p><strong>defprotocol</strong>: protocol是clojure中的接口; 需要注意的是，protocol里所有方法的第一个参数都是self/this参数（类似python），从第二个开始才是调用时传入的参数。</p>
+</li>
+<li><p>cluster.clj 文件中 <strong>mk-distributed-cluster-state</strong> 函数返回一个实现了ClusterState协议的对象, 该对象的基本方法都是使用zookeeper.clj文件中定义的方法实现的; </p>
+</li>
+<li><p>cluster.clj 文件中 <strong>StormClusterState</strong>协议, 主要定义了与storm相关的zookeeper操作, 包括读取topology中的任务分配, 向zookeeper中发送心跳信息等;</p>
+</li>
+<li><p>cluster.clj 文件中 <strong>mk-storm-cluster-state</strong> 函数返回一个实现了StormClusterState协议的对象;</p>
+</li>
+<li><p><strong>cluster.clj</strong>文件中主要定义了两个协议,并定义两个函数分别返回实现了该协议的对象;</p>
+</li>
+<li><p><strong>register</strong> : </p>
+</li>
+<li><p><strong>defrecord</strong> : </p>
+</li>
+<li><p><strong>SupervisorInfo</strong> 在common.clj文件中定义； converter.clj 文件中定义了SupevisorInfo的使用, 即在Thrift中的传输;</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defrecord</span></span> SupervisorInfo [time-secs hostname assignment-id used-ports meta scheduler-meta uptime-secs version])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>common.clj文件中定义了StormBase, 其中定义了Topology的基本信息; </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defrecord</span></span> StormBase [storm-name launch-time-secs status num-workers component-&gt;executors owner topology-action-options prev-status])</span><br><span class="line"><span class="comment">;;component-&gt;executors 保存了&lt;component-id , parallelism&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>common.clj文件中定义了Assignment, 其中定义当前topology的任务分配情况; </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defrecord</span></span> Assignment [master-code-dir node-&gt;host executor-&gt;node+port executor-&gt;start-time-secs])</span><br><span class="line"><span class="comment">;; master-code-dir 为nimbus在本地保存该topology信息的路径, 包括stormjar  stormcode   stormconf</span></span><br><span class="line"><span class="comment">;; node-&gt;host 定义了该Topology被分配到的&lt;supervisor-id, hostname&gt;</span></span><br><span class="line"><span class="comment">;; executor-&gt;node+port 定义了该topology中executor的分配情况, node对应于supervisor-id, port是supervisor的一个端口;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Clojure的函数后面加个<strong>感叹号</strong>的意思: 跟下划线一样是普通的组词字符，定义的时候想加就加, 在coding风格上提倡用这个形式来表示函数有明显<strong>副作用</strong>， 但是这只是风格上的提倡，在语义层面没有强制; 参考: <a href="http://dev.clojure.org/display/community/Library+Coding+Standards" target="_blank" rel="external">http://dev.clojure.org/display/community/Library+Coding+Standards</a></p>
+</li>
+<li><p>storm.<strong>thrift</strong> 是按照Thrift语法编写的RPC  接口文件, 其中定义了service Nimbus的所有注册服务; 由于storm运行在jvm上, 前面定义的结构需要使用thrift转换为对应的java代码； 即 backtype.storm.generated.Nimbus.<strong>Iface</strong>接口;</p>
+</li>
+<li><p>nimbus中定义的数据结构主要有两大类: <strong>java</strong>定义的数据结构和<strong>Clojure</strong>定义的数据结构; java定义的数据结构主要用于<strong>任务分配</strong>, 而Clojure定义的数据结构主要来充当一些<strong>Storm的元数据</strong>; java定义的数据结构主要封装在backtype.storm.<strong>scheduler</strong>包中；</p>
+</li>
+<li><p>nimbus文件中定义mk-assignments函数, 主要功能为负责对当前集群中的所有topology进行新一轮的任务调度, 一方面会检查已运行的topology所占用的资源, 是否需要重新分配; 另一方面会根据当前系统中的可用资源, 为新提交的topology分配任务;</p>
+</li>
+<li><p>log.clj 文件中定义了所有级别的log message 宏; </p>
+</li>
+<li><p>Clojure apply:  Applies fn f to the argument list formed by prepending intervening arguments to args. </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(apply f args)</span><br><span class="line">(apply f x args)</span><br><span class="line">(apply f x y args)</span><br><span class="line">(apply f x y z args)</span><br><span class="line">(apply f a b c d &amp; args) </span><br><span class="line">示例 : (apply str ["str1" "str2" "str3"]) ;;=&gt; "str1str2str3</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>do-cleanup函数功能</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; cleanup-storm-ids 函数判断出哪些topology需要清理, </span></span><br><span class="line"><span class="comment">;; 然后对需要清理的topology进行相应的操作;</span></span><br><span class="line"><span class="comment">;; 操作包括: 删除zookeeper中心跳和错误信息, </span></span><br><span class="line"><span class="comment">;; 然后尝试清除nimbus本地目录中的相关文件</span></span><br><span class="line"><span class="comment">;; 并从nimbus心跳缓存中移除对应的信息</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> do-cleanup [nimbus]</span><br><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [storm-cluster-state (<span class="symbol">:storm-cluster-state</span> nimbus)</span><br><span class="line">conf (<span class="symbol">:conf</span> nimbus)</span><br><span class="line">submit-lock (<span class="symbol">:submit-lock</span> nimbus)]</span><br><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [to-cleanup-ids (<span class="name"><span class="builtin-name">locking</span></span> submit-lock</span><br><span class="line">(<span class="name">cleanup-storm-ids</span> conf storm-cluster-state))]</span><br><span class="line">(<span class="name"><span class="builtin-name">when-not</span></span> (<span class="name"><span class="builtin-name">empty?</span></span> to-cleanup-ids)</span><br><span class="line">(<span class="name"><span class="builtin-name">doseq</span></span> [id to-cleanup-ids]</span><br><span class="line">(<span class="name">log-message</span> <span class="string">"Cleaning up "</span> id)</span><br><span class="line">(<span class="name">.teardown-heartbeats!</span> storm-cluster-state id)</span><br><span class="line">(<span class="name">.teardown-topology-errors!</span> storm-cluster-state id)</span><br><span class="line">(<span class="name">rmr</span> (<span class="name">master-stormdist-root</span> conf id))</span><br><span class="line">(<span class="name"><span class="builtin-name">swap!</span></span> (<span class="symbol">:heartbeats-cache</span> nimbus) dissoc id))</span><br><span class="line">))))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>clean-inbox函数功能</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; 该方法负责清理nimbus的inbox文件夹</span></span><br><span class="line"><span class="comment">;; 清理的条件是文件夹中的jar包从最后一次被修改到当前时间间隔超过了seconds</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> clean-inbox [dir-location seconds]</span><br><span class="line"><span class="string">"Deletes jar files in dir older than seconds."</span></span><br><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [now (<span class="name">current-time-secs</span>)</span><br><span class="line">pred #(<span class="name"><span class="builtin-name">and</span></span> (<span class="name">.isFile</span> %) (<span class="name">file-older-than?</span> now seconds %))</span><br><span class="line">files (<span class="name"><span class="builtin-name">filter</span></span> pred (<span class="name">file-seq</span> (<span class="name">File.</span> dir-location)))]</span><br><span class="line">(<span class="name"><span class="builtin-name">doseq</span></span> [f files]</span><br><span class="line">(<span class="name"><span class="builtin-name">if</span></span> (<span class="name">.delete</span> f)</span><br><span class="line">(<span class="name">log-message</span> <span class="string">"Cleaning inbox ... deleted: "</span> (<span class="name">.getName</span> f))</span><br><span class="line"><span class="comment">;; This should never happen</span></span><br><span class="line">(<span class="name">log-error</span> <span class="string">"Cleaning inbox ... error deleting: "</span> (<span class="name">.getName</span> f))</span><br><span class="line">))))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中 <strong>transition-name!</strong>函数</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; 该方法根据topology-name对应的转移事件,完成topology的状态转换,</span></span><br><span class="line"><span class="comment">;; 将基于storm-name的状态转换为基于storm-id的状态</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> transition-name! [nimbus storm-name event &amp; args]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [storm-id (<span class="name">get-storm-id</span> (<span class="symbol">:storm-cluster-state</span> nimbus) storm-name)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">when-not</span></span> storm-id</span><br><span class="line">      (<span class="name"><span class="builtin-name">throw</span></span> (<span class="name">NotAliveException.</span> storm-name)))</span><br><span class="line">    (<span class="name"><span class="builtin-name">apply</span></span> transition! nimbus storm-id event args)))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中<strong>transition!</strong> 方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; transition! 方法会根据传入的转移事件, </span></span><br><span class="line"><span class="comment">;; 获取与当前的Topology状态对应的状态转移函数,并执行该函数获取转换后的新状态</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> transition!</span><br><span class="line">  ([nimbus storm-id event]</span><br><span class="line">     (<span class="name">transition!</span> nimbus storm-id event <span class="literal">false</span>))</span><br><span class="line">  ([nimbus storm-id event error-on-no-transition?]</span><br><span class="line">     (<span class="name"><span class="builtin-name">locking</span></span> (<span class="symbol">:submit-lock</span> nimbus)</span><br><span class="line">       (<span class="name"><span class="builtin-name">let</span></span> [system-events #&#123;<span class="symbol">:startup</span>&#125;</span><br><span class="line">             [event &amp; event-args] (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">keyword?</span></span> event) [event] event)</span><br><span class="line">             storm-base (<span class="name"><span class="builtin-name">-&gt;</span></span> nimbus <span class="symbol">:storm-cluster-state</span>  (<span class="name">.storm-base</span> storm-id <span class="literal">nil</span>))</span><br><span class="line">             status (<span class="symbol">:status</span> storm-base)]</span><br><span class="line">         <span class="comment">;; handles the case where event was scheduled but topology has been removed</span></span><br><span class="line">         (<span class="name"><span class="builtin-name">if-not</span></span> status</span><br><span class="line">           (<span class="name">log-message</span> <span class="string">"Cannot apply event "</span> event <span class="string">" to "</span> storm-id <span class="string">" because topology no longer exists"</span>)</span><br><span class="line">           (<span class="name"><span class="builtin-name">let</span></span> [get-event (<span class="name"><span class="builtin-name">fn</span></span> [m e]</span><br><span class="line">                             (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">contains?</span></span> m e)</span><br><span class="line">                               (<span class="name">m</span> e)</span><br><span class="line">                               (<span class="name"><span class="builtin-name">let</span></span> [msg (<span class="name"><span class="builtin-name">str</span></span> <span class="string">"No transition for event: "</span> event</span><br><span class="line">                                              <span class="string">", status: "</span> status,</span><br><span class="line">                                              <span class="string">" storm-id: "</span> storm-id)]</span><br><span class="line">                                 (<span class="name"><span class="builtin-name">if</span></span> error-on-no-transition?</span><br><span class="line">                                   (<span class="name">throw-runtime</span> msg)</span><br><span class="line">                                   (<span class="name"><span class="builtin-name">do</span></span> (<span class="name"><span class="builtin-name">when-not</span></span> (<span class="name"><span class="builtin-name">contains?</span></span> system-events event)</span><br><span class="line">                                         (<span class="name">log-message</span> msg))</span><br><span class="line">                                       <span class="literal">nil</span>))</span><br><span class="line">                                 )))</span><br><span class="line">                 transition (<span class="name"><span class="builtin-name">-&gt;</span></span> (<span class="name">state-transitions</span> nimbus storm-id status storm-base)</span><br><span class="line">                                (<span class="name"><span class="builtin-name">get</span></span> (<span class="symbol">:type</span> status))</span><br><span class="line">                                (<span class="name">get-event</span> event))</span><br><span class="line">                 transition (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">or</span></span> (<span class="name"><span class="builtin-name">nil?</span></span> transition)</span><br><span class="line">                                    (<span class="name"><span class="builtin-name">keyword?</span></span> transition))</span><br><span class="line">                              (<span class="name"><span class="builtin-name">fn</span></span> [] transition)</span><br><span class="line">                              transition)</span><br><span class="line">                 storm-base-updates (<span class="name"><span class="builtin-name">apply</span></span> transition event-args)</span><br><span class="line">                 storm-base-updates (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">keyword?</span></span> storm-base-updates) <span class="comment">;if it's just a symbol, that just indicates new status.</span></span><br><span class="line">                                      &#123;<span class="symbol">:status</span> &#123;<span class="symbol">:type</span> storm-base-updates&#125;&#125;</span><br><span class="line">                                      storm-base-updates)]</span><br><span class="line"></span><br><span class="line">             (<span class="name"><span class="builtin-name">when</span></span> storm-base-updates</span><br><span class="line">               (<span class="name">.update-storm!</span> (<span class="symbol">:storm-cluster-state</span> nimbus) storm-id storm-base-updates)))))</span><br><span class="line">       )))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中<strong>kill-transition</strong> 方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; 函数功能: delay kill-time后 kill 掉topology</span></span><br><span class="line"><span class="comment">;; 在kill状态下执行remove转移事件</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> kill-transition [nimbus storm-id]</span><br><span class="line">  (<span class="name"><span class="builtin-name">fn</span></span> [kill-time]</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [delay (<span class="name"><span class="builtin-name">if</span></span> kill-time</span><br><span class="line">                  kill-time</span><br><span class="line">                  (<span class="name"><span class="builtin-name">get</span></span> (<span class="name">read-storm-conf</span> (<span class="symbol">:conf</span> nimbus) storm-id)</span><br><span class="line">                       TOPOLOGY-MESSAGE-TIMEOUT-SECS))]</span><br><span class="line">      (<span class="name">delay-event</span> nimbus</span><br><span class="line">                   storm-id</span><br><span class="line">                   delay</span><br><span class="line">                   <span class="symbol">:remove</span>)</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="symbol">:status</span> &#123;<span class="symbol">:type</span> <span class="symbol">:killed</span>&#125;</span><br><span class="line">        <span class="symbol">:topology-action-options</span> &#123;<span class="symbol">:delay-secs</span> delay <span class="symbol">:action</span> <span class="symbol">:kill</span>&#125;&#125;)</span><br><span class="line">    ))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中<strong>rebalance-transition</strong> 方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; 函数功能: delay time后 rebalance topology</span></span><br><span class="line"><span class="comment">;; 返回的执行结果中topology状态被更新为rebalancing</span></span><br><span class="line"><span class="comment">;; 等到计时器线程中do-rebalance转移事件执行完毕, 真正的rebalance才完成</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> rebalance-transition [nimbus storm-id status]</span><br><span class="line">  (<span class="name"><span class="builtin-name">fn</span></span> [time num-workers executor-overrides]</span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [delay (<span class="name"><span class="builtin-name">if</span></span> time</span><br><span class="line">                  time</span><br><span class="line">                  (<span class="name"><span class="builtin-name">get</span></span> (<span class="name">read-storm-conf</span> (<span class="symbol">:conf</span> nimbus) storm-id)</span><br><span class="line">                       TOPOLOGY-MESSAGE-TIMEOUT-SECS))]</span><br><span class="line">      (<span class="name">delay-event</span> nimbus</span><br><span class="line">                   storm-id</span><br><span class="line">                   delay</span><br><span class="line">                   <span class="symbol">:do-rebalance</span>)</span><br><span class="line">      &#123;<span class="symbol">:status</span> &#123;<span class="symbol">:type</span> <span class="symbol">:rebalancing</span>&#125; </span><br><span class="line">       <span class="symbol">:prev-status</span> status</span><br><span class="line">       <span class="symbol">:topology-action-options</span> (<span class="name"><span class="builtin-name">-&gt;</span></span> &#123;<span class="symbol">:delay-secs</span> delay <span class="symbol">:action</span> <span class="symbol">:rebalance</span>&#125;</span><br><span class="line">                                  (<span class="name">assoc-non-nil</span> <span class="symbol">:num-workers</span> num-workers)</span><br><span class="line">                                  (<span class="name">assoc-non-nil</span> <span class="symbol">:component-&gt;executors</span> executor-overrides))</span><br><span class="line">       &#125;)))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中<strong>state-transitions</strong> 方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; 该函数定义了一个状态转移矩阵, key的集合包括active, inactive, killed, rebalancing</span></span><br><span class="line"><span class="comment">;; 对应的value表示了处于由key指定的状态时, </span></span><br><span class="line"><span class="comment">;; 其状态变化需要遵循的从转移事件到对应状态的转移函数的集合</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> state-transitions [nimbus storm-id status storm-base]</span><br><span class="line">  &#123;<span class="symbol">:active</span> &#123;<span class="symbol">:inactivate</span> <span class="symbol">:inactive</span></span><br><span class="line">            <span class="symbol">:activate</span> <span class="literal">nil</span></span><br><span class="line">            <span class="symbol">:rebalance</span> (<span class="name">rebalance-transition</span> nimbus storm-id status)</span><br><span class="line">            <span class="symbol">:kill</span> (<span class="name">kill-transition</span> nimbus storm-id)</span><br><span class="line">            &#125;</span><br><span class="line">   <span class="symbol">:inactive</span> &#123;<span class="symbol">:activate</span> <span class="symbol">:active</span></span><br><span class="line">              <span class="symbol">:inactivate</span> <span class="literal">nil</span></span><br><span class="line">              <span class="symbol">:rebalance</span> (<span class="name">rebalance-transition</span> nimbus storm-id status)</span><br><span class="line">              <span class="symbol">:kill</span> (<span class="name">kill-transition</span> nimbus storm-id)</span><br><span class="line">              &#125;</span><br><span class="line">   <span class="symbol">:killed</span> &#123;<span class="symbol">:startup</span> (<span class="name"><span class="builtin-name">fn</span></span> [] (<span class="name">delay-event</span> nimbus</span><br><span class="line">                                         storm-id</span><br><span class="line">                                         (<span class="name"><span class="builtin-name">-&gt;</span></span> storm-base</span><br><span class="line">                                             <span class="symbol">:topology-action-options</span></span><br><span class="line">                                             <span class="symbol">:delay-secs</span>)</span><br><span class="line">                                         <span class="symbol">:remove</span>)</span><br><span class="line">                             <span class="literal">nil</span>)</span><br><span class="line">            <span class="symbol">:kill</span> (<span class="name">kill-transition</span> nimbus storm-id)</span><br><span class="line">            <span class="symbol">:remove</span> (<span class="name"><span class="builtin-name">fn</span></span> []</span><br><span class="line">                      (<span class="name">log-message</span> <span class="string">"Killing topology: "</span> storm-id)</span><br><span class="line">                      (<span class="name">.remove-storm!</span> (<span class="symbol">:storm-cluster-state</span> nimbus)</span><br><span class="line">                                      storm-id)</span><br><span class="line">                      <span class="literal">nil</span>)</span><br><span class="line">            &#125;</span><br><span class="line">   <span class="symbol">:rebalancing</span> &#123;<span class="symbol">:startup</span> (<span class="name"><span class="builtin-name">fn</span></span> [] (<span class="name">delay-event</span> nimbus</span><br><span class="line">                                              storm-id</span><br><span class="line">                                              (<span class="name"><span class="builtin-name">-&gt;</span></span> storm-base</span><br><span class="line">                                                  <span class="symbol">:topology-action-options</span></span><br><span class="line">                                                  <span class="symbol">:delay-secs</span>)</span><br><span class="line">                                              <span class="symbol">:do-rebalance</span>)</span><br><span class="line">                                 <span class="literal">nil</span>)</span><br><span class="line">                 <span class="symbol">:kill</span> (<span class="name">kill-transition</span> nimbus storm-id)</span><br><span class="line">                 <span class="symbol">:do-rebalance</span> (<span class="name"><span class="builtin-name">fn</span></span> []</span><br><span class="line">                                 (<span class="name">do-rebalance</span> nimbus storm-id status storm-base)</span><br><span class="line">                                 (<span class="symbol">:type</span> (<span class="symbol">:prev-status</span> storm-base)))</span><br><span class="line">                 &#125;&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nimbus.clj文件中<strong>compute-new-topology-&gt;executor-&gt;node+port</strong>方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; public so it can be mocked out</span></span><br><span class="line"><span class="comment">;; 该方法根据当前已经存在的分配情况, 结合系统当前的运行情况找出需要进行任务分配的Topology 集合</span></span><br><span class="line"><span class="comment">;; 并为他们分配任务, 计算出这一轮分配完之后的每个Topology对应的任务分配情况</span></span><br><span class="line"><span class="comment">;;  scratch-topology-id 是需要重新进行分配操作的topology id</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> compute-new-topology-&gt;executor-&gt;node+port [nimbus existing-assignments topologies scratch-topology-id]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [conf (<span class="symbol">:conf</span> nimbus)</span><br><span class="line">        storm-cluster-state (<span class="symbol">:storm-cluster-state</span> nimbus)</span><br><span class="line">        topology-&gt;executors (<span class="name">compute-topology-&gt;executors</span> nimbus (<span class="name"><span class="builtin-name">keys</span></span> existing-assignments))</span><br><span class="line">        <span class="comment">;; update the executors heartbeats first.</span></span><br><span class="line">        _ (<span class="name">update-all-heartbeats!</span> nimbus existing-assignments topology-&gt;executors)</span><br><span class="line">        topology-&gt;alive-executors (<span class="name">compute-topology-&gt;alive-executors</span> nimbus</span><br><span class="line">                                                                     existing-assignments</span><br><span class="line">                                                                     topologies</span><br><span class="line">                                                                     topology-&gt;executors</span><br><span class="line">                                                                     scratch-topology-id)</span><br><span class="line">        supervisor-&gt;dead-ports (<span class="name">compute-supervisor-&gt;dead-ports</span> nimbus</span><br><span class="line">                                                               existing-assignments</span><br><span class="line">                                                               topology-&gt;executors</span><br><span class="line">                                                               topology-&gt;alive-executors)</span><br><span class="line">        topology-&gt;scheduler-assignment (<span class="name">compute-topology-&gt;scheduler-assignment</span> nimbus</span><br><span class="line">                                                                               existing-assignments</span><br><span class="line">                                                                               topology-&gt;alive-executors)</span><br><span class="line"></span><br><span class="line">        <span class="comment">;; 过滤条件: 该Topology的所有Executor为空, 或者该Topology的所有Executors不等于该Topolgy</span></span><br><span class="line">       <span class="comment">;; 的alive executors, 或者该Topology的num-used-worker 数目小雨指定的num workers</span></span><br><span class="line">        missing-assignment-topologies (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> topologies</span><br><span class="line">                                           .getTopologies    <span class="comment">;; Collection&lt;TopologyDetails&gt;</span></span><br><span class="line">                                           (<span class="name"><span class="builtin-name">map</span></span> (<span class="name"><span class="builtin-name">memfn</span></span> getId))</span><br><span class="line">                                           (<span class="name"><span class="builtin-name">filter</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [t]</span><br><span class="line">                                                      (<span class="name"><span class="builtin-name">let</span></span> [alle (<span class="name"><span class="builtin-name">get</span></span> topology-&gt;executors t)</span><br><span class="line">                                                            alivee (<span class="name"><span class="builtin-name">get</span></span> topology-&gt;alive-executors t)]</span><br><span class="line">                                                            (<span class="name"><span class="builtin-name">or</span></span> (<span class="name"><span class="builtin-name">empty?</span></span> alle)</span><br><span class="line">                                                                (<span class="name"><span class="builtin-name">not=</span></span> alle alivee)</span><br><span class="line">                                                                (<span class="name"><span class="builtin-name">&lt;</span></span> (<span class="name"><span class="builtin-name">-&gt;</span></span> topology-&gt;scheduler-assignment</span><br><span class="line">                                                                       (<span class="name"><span class="builtin-name">get</span></span> t)</span><br><span class="line">                                                                       num-used-workers )</span><br><span class="line">                                                                   (<span class="name"><span class="builtin-name">-&gt;</span></span> topologies (<span class="name">.getById</span> t) .getNumWorkers)</span><br><span class="line">                                                                   ))</span><br><span class="line">                                                            ))))</span><br><span class="line">        all-scheduling-slots (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (<span class="name">all-scheduling-slots</span> nimbus topologies missing-assignment-topologies)</span><br><span class="line">                                  (<span class="name"><span class="builtin-name">map</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [[node-id port]] &#123;node-id #&#123;port&#125;&#125;))</span><br><span class="line">                                  (<span class="name"><span class="builtin-name">apply</span></span> merge-with set/union))</span><br><span class="line"></span><br><span class="line">        supervisors (<span class="name">read-all-supervisor-details</span> nimbus all-scheduling-slots supervisor-&gt;dead-ports)</span><br><span class="line">        cluster (<span class="name">Cluster.</span> (<span class="symbol">:inimbus</span> nimbus) supervisors topology-&gt;scheduler-assignment)</span><br><span class="line"></span><br><span class="line">        <span class="comment">;; call scheduler.schedule to schedule all the topologies</span></span><br><span class="line">        <span class="comment">;; the new assignments for all the topologies are in the cluster object.</span></span><br><span class="line">        _ (<span class="name">.schedule</span> (<span class="symbol">:scheduler</span> nimbus) topologies cluster)</span><br><span class="line">        new-scheduler-assignments (<span class="name">.getAssignments</span> cluster)</span><br><span class="line">        <span class="comment">;; add more information to convert SchedulerAssignment to Assignment</span></span><br><span class="line">        new-topology-&gt;executor-&gt;node+port (<span class="name">compute-topology-&gt;executor-&gt;node+port</span> new-scheduler-assignments)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">reset!</span></span> (<span class="symbol">:id-&gt;sched-status</span> nimbus) (<span class="name">.getStatusMap</span> cluster))</span><br><span class="line">    <span class="comment">;; print some useful information.</span></span><br><span class="line">    (<span class="name"><span class="builtin-name">doseq</span></span> [[topology-id executor-&gt;node+port] new-topology-&gt;executor-&gt;node+port</span><br><span class="line">            <span class="symbol">:let</span> [old-executor-&gt;node+port (<span class="name"><span class="builtin-name">-&gt;</span></span> topology-id</span><br><span class="line">                                          existing-assignments</span><br><span class="line">                                          <span class="symbol">:executor-&gt;node+port</span>)</span><br><span class="line">                  reassignment (<span class="name"><span class="builtin-name">filter</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [[executor node+port]]</span><br><span class="line">                                         (<span class="name"><span class="builtin-name">and</span></span> (<span class="name"><span class="builtin-name">contains?</span></span> old-executor-&gt;node+port executor)</span><br><span class="line">                                              (<span class="name"><span class="builtin-name">not</span></span> (<span class="name"><span class="builtin-name">=</span></span> node+port (<span class="name">old-executor-&gt;node+port</span> executor)))))</span><br><span class="line">                                       executor-&gt;node+port)]]</span><br><span class="line">      (<span class="name"><span class="builtin-name">when-not</span></span> (<span class="name"><span class="builtin-name">empty?</span></span> reassignment)</span><br><span class="line">        (<span class="name"><span class="builtin-name">let</span></span> [new-slots-cnt (<span class="name"><span class="builtin-name">count</span></span> (<span class="name">set</span> (<span class="name"><span class="builtin-name">vals</span></span> executor-&gt;node+port)))</span><br><span class="line">              reassign-executors (<span class="name"><span class="builtin-name">keys</span></span> reassignment)]</span><br><span class="line">          (<span class="name">log-message</span> <span class="string">"Reassigning "</span> topology-id <span class="string">" to "</span> new-slots-cnt <span class="string">" slots"</span>)</span><br><span class="line">          (<span class="name">log-message</span> <span class="string">"Reassign executors: "</span> (<span class="name"><span class="builtin-name">vec</span></span> reassign-executors)))))</span><br><span class="line"></span><br><span class="line">    new-topology-&gt;executor-&gt;node+port))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Clojure 中 <strong>mapcat</strong>方法:  Returns the result of applying concat to the result of applying map to f and colls.  Thus function f should return a collection. Returns a transducer when no collections are provided. </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">user=&gt; (mapcat (fn [[k v]] </span><br><span class="line">                 (for [[k2 v2] v] </span><br><span class="line">                   (concat [k k2] v2)))</span><br><span class="line">         '&#123;:a &#123;:x (1 2) :y (3 4)&#125;</span><br><span class="line">           :b &#123;:x (1 2) :z (5 6)&#125;&#125;)</span><br><span class="line"></span><br><span class="line">((:a :x 1 2) (:a :y 3 4) (:b :x 1 2) (:b :z 5 6))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>if-let</strong> :  对let添加if判断, 如下面的例子, 如果nums非false或nil, 则执行累加, 否则表示list中没有偶数打印”No even numbers found.” 适用于对于不同的let结果的不同处理. </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">user=&gt; (defn sum-even-numbers [nums]</span><br><span class="line">         (if-let [nums (seq (filter even? nums))]</span><br><span class="line">           (reduce + nums)</span><br><span class="line">           "No even numbers found."))</span><br><span class="line">user=&gt; (sum-even-numbers [1 3 5 7 9])</span><br><span class="line">"No even numbers found."</span><br><span class="line">user=&gt; (sum-even-numbers [1 3 5 7 9 10 12])</span><br><span class="line">22</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>when-let</strong> :  when-let, 一样的理论, 当let赋值非false或nil时, 执行相应逻辑, 否则返回nil </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(defn drop-one</span><br><span class="line">  [coll]</span><br><span class="line">  (when-let [s (seq coll)]</span><br><span class="line">    (rest s)))</span><br><span class="line">user=&gt; (drop-one [1 2 3])</span><br><span class="line">(2 3)</span><br><span class="line">user=&gt; (drop-one [])</span><br><span class="line">nil</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>nimbus 本地工作目录结构</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- workdir</span><br><span class="line">	- nimbus</span><br><span class="line">		- inbox</span><br><span class="line">		- stormdist</span><br><span class="line">			- topology id命名的文件夹</span><br><span class="line">				- **stormcode.ser** ( backtype.storm.generated包中StormTopology对象序列化)</span><br><span class="line">				- **stormconf.ser**  (topology conf 代码序列化)</span><br><span class="line">				- **stormjar.jar**     (用户提交的jar包)</span><br><span class="line">	- supervisor</span><br><span class="line">		- isupervisor</span><br><span class="line">		- localstate</span><br><span class="line">		- tmp</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TopologyDetails 对象中的数据结构</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TopologyDetails</span> </span>&#123;</span><br><span class="line">    String topologyId;</span><br><span class="line">    Map topologyConf;</span><br><span class="line">    StormTopology topology;</span><br><span class="line">    Map&lt;ExecutorDetails, String&gt; executorToComponent;</span><br><span class="line">    <span class="keyword">int</span> numWorkers;</span><br><span class="line"> ......</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>ExcutorDetails</strong> 对象记录了每个Executor所对应的startTask和endTask, 这样定义是为了保证Storm在计算Executor时, 每个Executor都是一个连续的任务集合；</p>
+</li>
+<li><p>Clojure 中 <strong>swap!</strong> 宏的作用:<br><strong>(swap! atom f)    (swap! atom f x)    (swap! atom f x y)     (swap! atom f x y &amp; args)</strong><br>Atomically swaps the value of atom to be:<br>(apply f current-value-of-atom args). Note that f may be called<br>multiple times, and thus should be free of side effects.  Returns<br>the value that was swapped in.<br>swap! 将函数f作用于当前状态值和额外的参数args之上，形成新的状态值</p>
+</li>
+<li><p><strong>SchedulerAssignment</strong> 是一个接口, <strong>SchedulerAssignmentImpl</strong>是对这个接口的实现；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SchedulerAssignment</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Does this slot occupied by this assignment?</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSlotOccupied</span><span class="params">(WorkerSlot slot)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//is the executor assigned?</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isExecutorAssigned</span><span class="params">(ExecutorDetails executor)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// get the topology-id this assignment is for.</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getTopologyId</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//get the executor -&gt; slot map.</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Map&lt;ExecutorDetails, WorkerSlot&gt; <span class="title">getExecutorToSlot</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Return the executors covered by this assignments</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Set&lt;ExecutorDetails&gt; <span class="title">getExecutors</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Set&lt;WorkerSlot&gt; <span class="title">getSlots</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> backtype.storm.scheduler;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.Collection;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.HashSet;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"></span><br><span class="line"><span class="comment">//<span class="doctag">TODO:</span> improve this by maintaining slot -&gt; executors as well for more efficient operations</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchedulerAssignmentImpl</span> <span class="keyword">implements</span> <span class="title">SchedulerAssignment</span> </span>&#123;</span><br><span class="line">    <span class="comment">//topology-id this assignment is for.</span></span><br><span class="line">    String topologyId;</span><br><span class="line">    <span class="comment">// assignment detail, a mapping from executor to WorkerSlot</span></span><br><span class="line">    Map&lt;ExecutorDetails, WorkerSlot&gt; executorToSlot;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SchedulerAssignmentImpl</span><span class="params">(String topologyId, Map&lt;ExecutorDetails, WorkerSlot&gt; executorToSlots)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.topologyId = topologyId;</span><br><span class="line">        <span class="keyword">this</span>.executorToSlot = <span class="keyword">new</span> HashMap&lt;ExecutorDetails, WorkerSlot&gt;(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (executorToSlots != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.executorToSlot.putAll(executorToSlots);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Set&lt;WorkerSlot&gt; <span class="title">getSlots</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HashSet(executorToSlot.values());</span><br><span class="line">    &#125;    </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//Assign the slot to executors.</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">assign</span><span class="params">(WorkerSlot slot, Collection&lt;ExecutorDetails&gt; executors)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (ExecutorDetails executor : executors) &#123;</span><br><span class="line">            <span class="keyword">this</span>.executorToSlot.put(executor, slot);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//Release the slot occupied by this assignment.</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unassignBySlot</span><span class="params">(WorkerSlot slot)</span> </span>&#123;</span><br><span class="line">        List&lt;ExecutorDetails&gt; executors = <span class="keyword">new</span> ArrayList&lt;ExecutorDetails&gt;();</span><br><span class="line">        <span class="keyword">for</span> (ExecutorDetails executor : <span class="keyword">this</span>.executorToSlot.keySet()) &#123;</span><br><span class="line">            WorkerSlot ws = <span class="keyword">this</span>.executorToSlot.get(executor);</span><br><span class="line">            <span class="keyword">if</span> (ws.equals(slot)) &#123;</span><br><span class="line">                executors.add(executor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// remove</span></span><br><span class="line">        <span class="keyword">for</span> (ExecutorDetails executor : executors) &#123;</span><br><span class="line">            <span class="keyword">this</span>.executorToSlot.remove(executor);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Does this slot occupied by this assignment?</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSlotOccupied</span><span class="params">(WorkerSlot slot)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.executorToSlot.containsValue(slot);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isExecutorAssigned</span><span class="params">(ExecutorDetails executor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.executorToSlot.containsKey(executor);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getTopologyId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.topologyId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Map&lt;ExecutorDetails, WorkerSlot&gt; <span class="title">getExecutorToSlot</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.executorToSlot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Return the executors covered by this assignments</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Set&lt;ExecutorDetails&gt; <span class="title">getExecutors</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.executorToSlot.keySet();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>nimbus.clj</strong>文件中<strong>mk-assignments</strong>方法</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; get existing assignment (just the executor-&gt;node+port map) -&gt; default to &#123;&#125;</span></span><br><span class="line"><span class="comment">;; filter out ones which have a executor timeout</span></span><br><span class="line"><span class="comment">;; figure out available slots on cluster. add to that the used valid slots to get total slots. figure out how many executors should be in each slot (e.g., 4, 4, 4, 5)</span></span><br><span class="line"><span class="comment">;; only keep existing slots that satisfy one of those slots. for rest, reassign them across remaining slots</span></span><br><span class="line"><span class="comment">;; edge case for slots with no executor timeout but with supervisor timeout... just treat these as valid slots that can be reassigned to. worst comes to worse the executor will timeout and won't assign here next time around</span></span><br><span class="line"><span class="comment">;; mk-assignments主要负责对当前集群中的所有Topology进行新一轮的任务调度, 它一方面会检查已运行的Topology</span></span><br><span class="line"><span class="comment">;; 所占用的资源,判断他们是否有问题, 是否需要重新分配, 另一方面也会根据当前的可用资源, 为新提交的Topology分配任务</span></span><br><span class="line"><span class="comment">;; 然后会将所有的分配信息保存或者更新到Zookeeper中,</span></span><br><span class="line">(<span class="name">defnk</span> mk-assignments [nimbus <span class="symbol">:scratch-topology-id</span> <span class="literal">nil</span>]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [conf (<span class="symbol">:conf</span> nimbus)</span><br><span class="line">        storm-cluster-state (<span class="symbol">:storm-cluster-state</span> nimbus)</span><br><span class="line">        <span class="comment">^INimbus</span> inimbus (<span class="symbol">:inimbus</span> nimbus)</span><br><span class="line">        <span class="comment">;; read all the topologies</span></span><br><span class="line">        topology-ids (<span class="name">.active-storms</span> storm-cluster-state)</span><br><span class="line">        topologies (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125; (<span class="name"><span class="builtin-name">for</span></span> [tid topology-ids]</span><br><span class="line">                              &#123;tid (<span class="name">read-topology-details</span> nimbus tid)&#125;))</span><br><span class="line">        topologies (<span class="name">Topologies.</span> topologies)</span><br><span class="line">        <span class="comment">;; read all the assignments</span></span><br><span class="line">        assigned-topology-ids (<span class="name">.assignments</span> storm-cluster-state <span class="literal">nil</span>)</span><br><span class="line">        existing-assignments (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125; (<span class="name"><span class="builtin-name">for</span></span> [tid assigned-topology-ids]</span><br><span class="line">                                        <span class="comment">;; for the topology which wants rebalance (specified by the scratch-topology-id)</span></span><br><span class="line">                                        <span class="comment">;; we exclude its assignment, meaning that all the slots occupied by its assignment</span></span><br><span class="line">                                        <span class="comment">;; will be treated as free slot in the scheduler code.</span></span><br><span class="line">                                        (<span class="name"><span class="builtin-name">when</span></span> (<span class="name"><span class="builtin-name">or</span></span> (<span class="name"><span class="builtin-name">nil?</span></span> scratch-topology-id) (<span class="name"><span class="builtin-name">not=</span></span> tid scratch-topology-id))</span><br><span class="line">                                          &#123;tid (<span class="name">.assignment-info</span> storm-cluster-state tid <span class="literal">nil</span>)&#125;)))</span><br><span class="line">        <span class="comment">;; make the new assignments for topologies</span></span><br><span class="line">        topology-&gt;executor-&gt;node+port (<span class="name">compute-new-topology-&gt;executor-&gt;node+port</span></span><br><span class="line">                                       nimbus</span><br><span class="line">                                       existing-assignments</span><br><span class="line">                                       topologies</span><br><span class="line">                                       scratch-topology-id)</span><br><span class="line"></span><br><span class="line">        topology-&gt;executor-&gt;node+port (<span class="name"><span class="builtin-name">merge</span></span> (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125; (<span class="name"><span class="builtin-name">for</span></span> [id assigned-topology-ids] &#123;id <span class="literal">nil</span>&#125;)) topology-&gt;executor-&gt;node+port)</span><br><span class="line"></span><br><span class="line">        now-secs (<span class="name">current-time-secs</span>)</span><br><span class="line"></span><br><span class="line">        basic-supervisor-details-map (<span class="name">basic-supervisor-details-map</span> storm-cluster-state)</span><br><span class="line"></span><br><span class="line">        <span class="comment">;; construct the final Assignments by adding start-times etc into it</span></span><br><span class="line">        new-assignments (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125; (<span class="name"><span class="builtin-name">for</span></span> [[topology-id executor-&gt;node+port] topology-&gt;executor-&gt;node+port</span><br><span class="line">                                        <span class="symbol">:let</span> [existing-assignment (<span class="name"><span class="builtin-name">get</span></span> existing-assignments topology-id)</span><br><span class="line">                                              all-nodes (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> executor-&gt;node+port vals (<span class="name"><span class="builtin-name">map</span></span> first) set)</span><br><span class="line">                                              node-&gt;host (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> all-nodes</span><br><span class="line">                                                              (<span class="name"><span class="builtin-name">mapcat</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [node]</span><br><span class="line">                                                                        (<span class="name"><span class="builtin-name">if-let</span></span> [host (<span class="name">.getHostName</span> inimbus basic-supervisor-details-map node)]</span><br><span class="line">                                                                          [[node host]]</span><br><span class="line">                                                                          )))</span><br><span class="line">                                                              (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125;))</span><br><span class="line">                                              all-node-&gt;host (<span class="name"><span class="builtin-name">merge</span></span> (<span class="symbol">:node-&gt;host</span> existing-assignment) node-&gt;host)</span><br><span class="line">                                              reassign-executors (<span class="name">changed-executors</span> (<span class="symbol">:executor-&gt;node+port</span> existing-assignment) executor-&gt;node+port)</span><br><span class="line">                                              start-times (<span class="name"><span class="builtin-name">merge</span></span> (<span class="symbol">:executor-&gt;start-time-secs</span> existing-assignment)</span><br><span class="line">                                                                (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125;</span><br><span class="line">                                                                      (<span class="name"><span class="builtin-name">for</span></span> [id reassign-executors]</span><br><span class="line">                                                                        [id now-secs]</span><br><span class="line">                                                                        )))]]</span><br><span class="line">                                   &#123;topology-id (<span class="name">Assignment.</span></span><br><span class="line">                                                 (<span class="name">master-stormdist-root</span> conf topology-id)</span><br><span class="line">                                                 (<span class="name"><span class="builtin-name">select-keys</span></span> all-node-&gt;host all-nodes)</span><br><span class="line">                                                 executor-&gt;node+port</span><br><span class="line">                                                 start-times)&#125;))]</span><br><span class="line"></span><br><span class="line">    <span class="comment">;; tasks figure out what tasks to talk to by looking at topology at runtime</span></span><br><span class="line">    <span class="comment">;; only log/set when there's been a change to the assignment</span></span><br><span class="line">    (<span class="name"><span class="builtin-name">doseq</span></span> [[topology-id assignment] new-assignments</span><br><span class="line">            <span class="symbol">:let</span> [existing-assignment (<span class="name"><span class="builtin-name">get</span></span> existing-assignments topology-id)</span><br><span class="line">                  topology-details (<span class="name">.getById</span> topologies topology-id)]]</span><br><span class="line">      (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">=</span></span> existing-assignment assignment)</span><br><span class="line">        (<span class="name">log-debug</span> <span class="string">"Assignment for "</span> topology-id <span class="string">" hasn't changed"</span>)</span><br><span class="line">        (<span class="name"><span class="builtin-name">do</span></span></span><br><span class="line">          (<span class="name">log-message</span> <span class="string">"Setting new assignment for topology id "</span> topology-id <span class="string">": "</span> (<span class="name">pr-str</span> assignment))</span><br><span class="line">          (<span class="name">.set-assignment!</span> storm-cluster-state topology-id assignment)</span><br><span class="line">          )))</span><br><span class="line">    (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> new-assignments</span><br><span class="line">          (<span class="name"><span class="builtin-name">map</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [[topology-id assignment]]</span><br><span class="line">            (<span class="name"><span class="builtin-name">let</span></span> [existing-assignment (<span class="name"><span class="builtin-name">get</span></span> existing-assignments topology-id)]</span><br><span class="line">              [topology-id (<span class="name"><span class="builtin-name">map</span></span> to-worker-slot (<span class="name">newly-added-slots</span> existing-assignment assignment))]</span><br><span class="line">              )))</span><br><span class="line">          (<span class="name"><span class="builtin-name">into</span></span> &#123;&#125;)</span><br><span class="line">          (<span class="name">.assignSlots</span> inimbus topologies))</span><br><span class="line">    ))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>WorkerTopologyContext 上下文对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WorkerTopologyContext</span> <span class="keyword">extends</span> <span class="title">GeneralTopologyContext</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SHARED_EXECUTOR = <span class="string">"executor"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> Integer _workerPort;</span><br><span class="line">    <span class="keyword">private</span> List&lt;Integer&gt; _workerTasks;</span><br><span class="line">    <span class="keyword">private</span> String _codeDir;</span><br><span class="line">    <span class="keyword">private</span> String _pidDir;</span><br><span class="line">    Map&lt;String, Object&gt; _userResources;</span><br><span class="line">    Map&lt;String, Object&gt; _defaultResources;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">WorkerTopologyContext</span><span class="params">(</span><br><span class="line">            StormTopology topology,</span><br><span class="line">            Map stormConf,</span><br><span class="line">            Map&lt;Integer, String&gt; taskToComponent,</span><br><span class="line">            Map&lt;String, List&lt;Integer&gt;&gt; componentToSortedTasks,</span><br><span class="line">            Map&lt;String, Map&lt;String, Fields&gt;&gt; componentToStreamToFields,</span><br><span class="line">            String stormId,</span><br><span class="line">            String codeDir,</span><br><span class="line">            String pidDir,</span><br><span class="line">            Integer workerPort,</span><br><span class="line">            List&lt;Integer&gt; workerTasks,</span><br><span class="line">            Map&lt;String, Object&gt; defaultResources,</span><br><span class="line">            Map&lt;String, Object&gt; userResources</span><br><span class="line">            )</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(topology, stormConf, taskToComponent, componentToSortedTasks, componentToStreamToFields, stormId);</span><br><span class="line">        _codeDir = codeDir;</span><br><span class="line">        _defaultResources = defaultResources;</span><br><span class="line">        _userResources = userResources;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(pidDir!=<span class="keyword">null</span>) &#123;</span><br><span class="line">                _pidDir = <span class="keyword">new</span> File(pidDir).getCanonicalPath();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                _pidDir = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Could not get canonical path for "</span> + _pidDir, e);</span><br><span class="line">        &#125;</span><br><span class="line">        _workerPort = workerPort;</span><br><span class="line">        _workerTasks = workerTasks;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>common.clj</strong> 文件定义了对Topology的检验函数, 为Topoloy添加acker, metric, system bolt的方法;</p>
+</li>
+<li><p>Clojure中<strong>-functionname</strong> 表示该函数是public的，调用该函数时，不需要加-， 直接functionname即可；</p>
+</li>
+<li><p>nimbus读取storm的配置文件函数<strong>read-storm-config</strong> 是在config.clj中定义的； 而nimbus中定义的read-storm-conf是读取指定Topology的配置信息；</p>
+</li>
+<li><p>read-storm-config 函数中真正读取<strong>storm.yaml</strong>函数是由java代码来实现的， <strong>readStormConfig</strong>定义在Utils.java中，该文件中解析yaml文件， 其中的Yaml类是由<strong>org.yaml.snakeyaml.Yaml</strong> 提供的；</p>
+</li>
+<li><p>Apache thrift的使用步骤： </p>
+<ol>
+<li>编写后缀名为thrift的文件，使用工具生成对应语言的源代码，thrift支持的语言很多，包括C/C++/java/python等；</li>
+<li>实现thrift client；</li>
+<li>实现thrift server；thfirt server需要实现thrift文件中定义的service接口；</li>
+</ol>
+</li>
+<li><p>supervisor 启动时先设置了线程的未捕捉异常的Handler.  <strong>Thread.UncaughtExceptionHandler</strong>解释:<br>一个处理接口，当一个线程因为没有捕捉的异常导致的突然终止时，该接口被唤醒。 当一个线程因为不能捕捉的异常将要终止的时候，JVM会调用getUncaughtExceptionHandler方法查找扎个线程对应的指定UncaughtExceptionHandler对象，并且回调这个对象的uncaughtException方法。如果这个线程没有指定的UncaughtExceptionHandler对象，那么将ThreadGroup对象作为UncaughtExceptionHandler对象，因为ThreadGroup类实现了Thread.UncaughtExceptionHandler接口；会调用顶层ThreadGroup的那个默认的UncaughtExceptionHandler对象的uncaughtException方法.</p>
+</li>
+<li><p><strong>standalone-supervisor</strong> 方法实例化一个实现了ISupervisor 接口的对象;</p>
+</li>
+<li><p><strong>storm事件管理器</strong>定义在event.clj中，主要功能就是通过独立线程执行”事件处理函数”。我们可以将”事件处理函数”添加到EventManager的阻塞队列中，EventManager的事件处理线程不断地从阻塞队列中获取”事件处理函数”并执行。<br><strong>EventManager协议:</strong>   协议就是一组函数定义的集合，协议中函数的第一个参数必须为实现该协议的实例本身，类似于java中实例方法的第一个参数为this；协议类似于java中的接口。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defprotocol</span></span> EventManager</span><br><span class="line">  (<span class="name">add</span> [this event-fn])</span><br><span class="line">  (<span class="name">waiting?</span> [this])</span><br><span class="line">  (<span class="name">shutdown</span> [this]))</span><br></pre></td></tr></table></figure>
+<p><strong>event-manager</strong>函数定义如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">(defn event-manager</span><br><span class="line">  &quot;Creates a thread to respond to events. Any error will cause process to halt&quot;</span><br><span class="line">  ;; daemon?表示是否将事件处理线程设置成守护线程</span><br><span class="line">  [daemon?]</span><br><span class="line">  ;; added表示已添加的&quot;事件处理函数&quot;的个数</span><br><span class="line">  (let [added (atom 0)</span><br><span class="line">    ;; processed表示已处理的&quot;事件处理函数&quot;的个数</span><br><span class="line">        processed (atom 0)</span><br><span class="line">    ;; queue绑定事件管理器的阻塞队列LinkedBlockingQueue</span><br><span class="line">        ^LinkedBlockingQueue queue (LinkedBlockingQueue.)</span><br><span class="line">    ;; 设置事件管理器的状态为&quot;running&quot;</span><br><span class="line">        running (atom true)</span><br><span class="line">    ;; 创建事件处理线程。Clojure函数实现了Runnable和Callable接口，所以可以将Clojure函数作为参数传递给java.lang.Thread类的构造函数</span><br><span class="line">        runner (Thread.</span><br><span class="line">             ;; 事件处理线程循环检查事件处理器的状态是否是&quot;running&quot;，如果是，就从阻塞队列中获取&quot;事件处理函数&quot;，并执行；然后将processed加1</span><br><span class="line">                 (fn []</span><br><span class="line">                   (try-cause</span><br><span class="line">                     (while @running</span><br><span class="line">                       (let [r (.take queue)]</span><br><span class="line">                         (r)</span><br><span class="line">                         (swap! processed inc)))</span><br><span class="line">                     (catch InterruptedException t</span><br><span class="line">                       (log-message &quot;Event manager interrupted&quot;))</span><br><span class="line">                     (catch Throwable t</span><br><span class="line">                       (log-error t &quot;Error when processing event&quot;)</span><br><span class="line">                       (exit-process! 20 &quot;Error when processing an event&quot;)))))]:</span><br><span class="line">    (.setDaemon runner daemon?)</span><br><span class="line">    ;; 启动事件处理线程</span><br><span class="line">    (.start runner)</span><br><span class="line">    ;; 返回一个实现了EventManager协议的实例</span><br><span class="line">    (reify</span><br><span class="line">      EventManager</span><br><span class="line">      ;; add函数将&quot;事件处理函数&quot;添加到事件处理器的阻塞队列中</span><br><span class="line">      (add</span><br><span class="line">        [this event-fn]</span><br><span class="line">        ;; should keep track of total added and processed to know if this is finished yet</span><br><span class="line">        (when-not @running</span><br><span class="line">          (throw (RuntimeException. &quot;Cannot add events to a shutdown event manager&quot;)))</span><br><span class="line">        (swap! added inc)</span><br><span class="line">        (.put queue event-fn))</span><br><span class="line">      ;; waiting?判断事件处理线程是否处于等待状态</span><br><span class="line">      (waiting?</span><br><span class="line">        [this]</span><br><span class="line">        (or (Time/isThreadWaiting runner)</span><br><span class="line">            (= @processed @added)))</span><br><span class="line">      ;; 关闭事件管理器</span><br><span class="line">      (shutdown</span><br><span class="line">        [this]</span><br><span class="line">        (reset! running false)</span><br><span class="line">        (.interrupt runner)</span><br><span class="line">        (.join runner)))))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>UI界面上的信息获取是在ui.core.clj 文件中实现的,里面实现了所有的UI  API 函数, 可以获取UI 界面信息;</p>
+</li>
+<li><p>storm 0.11.0 版本中使用的thrift 是0.9.2 版本的,我用0.9.3 版本编辑结果后用以下命令比较:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `ls ./` ; <span class="keyword">do</span> diff <span class="variable">$i</span> <span class="string">"/home/yjk/storm-master-copy/storm-core/src/jvm/backtype/storm/generated/<span class="variable">$i</span>"</span>; <span class="keyword">done</span>;</span><br></pre></td></tr></table></figure>
+<p>结果基本上是相等的, 但有细微差别. 存在许多以下转换</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;       return get_num_tasks();</span><br><span class="line">---</span><br><span class="line">&gt;       return Integer.valueOf(get_num_tasks());</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>未完待续. </p>
+<p><br> <br><br><br></p>
+<hr>
+<p><strong>转载请标明文章出处。本文内容为实践后的原创整理，如果侵犯了您的版权，请联系我进行删除，邮件：yanhealth@163.com</strong></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/集群技术/">集群技术</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/storm/">storm</a><a href="/tags/zookeeper/">zookeeper</a><a href="/tags/clojure/">clojure</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://yanjiankang.cn/storm-source-study-note-01/" data-title="Storm源码阅读学习笔记之一(待整理) | Yan Jiankang&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/Storm-sourcecode-analize-tools/" title="Storm 源码分析——工具篇">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Storm 源码分析——工具篇</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/Storm-introduce-parallism/"  title="Storm并行度详解">
+ <strong>下一篇：</strong><br/> 
+ <span>Storm并行度详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="storm-source-study-note-01/" data-title="Storm源码阅读学习笔记之一(待整理)" data-url="http://yanjiankang.cn/storm-source-study-note-01/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Linux配置/" title="Linux配置">Linux配置<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/流媒体技术/" title="流媒体技术">流媒体技术<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/生活杂记/" title="生活杂记">生活杂记<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件工程/" title="软件工程">软件工程<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/集群技术/" title="集群技术">集群技术<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/storm/" title="storm">storm<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/zookeeper/" title="zookeeper">zookeeper<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/opencv/" title="opencv">opencv<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/rtsp/" title="rtsp">rtsp<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/LeetCode/" title="LeetCode">LeetCode<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ubuntu/" title="ubuntu">ubuntu<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/producer/" title="producer">producer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/consumer/" title="consumer">consumer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/gstream/" title="gstream">gstream<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并行度/" title="并行度">并行度<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/idea/" title="idea">idea<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Clojure/" title="Clojure">Clojure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/cursive/" title="cursive">cursive<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Jiankang Yan in Fudan. <br/>
+			This is my github blog, Welcome.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/yanhealth" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/healthyjk" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
+		
+		<a href="/about" target="_blank" title="Jiankang Yan">Jiankang Yan</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"yanjiankang"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
