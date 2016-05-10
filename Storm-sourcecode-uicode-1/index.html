@@ -131,7 +131,7 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 <p>首先看main函数， 就是调用start-server! 函数（clojure中！表示函数是突变函数，表示方法或宏不能在STM中安全使用）：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> -main [] (<span class="name">start-server!</span>))</span><br></pre></td></tr></table></figure></p>
 <p>start-server！函数定义如下：<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> start-server!</span><br><span class="line">  []</span><br><span class="line">  (<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">    (<span class="name"><span class="builtin-name">let</span></span> [conf *STORM-CONF*</span><br><span class="line">          header-buffer-size (<span class="name"><span class="builtin-name">int</span></span> (<span class="name">.get</span> conf UI-HEADER-BUFFER-BYTES))</span><br><span class="line">          filters-confs [&#123;<span class="symbol">:filter-class</span> (<span class="name">conf</span> UI-FILTER)</span><br><span class="line">                          <span class="symbol">:filter-params</span> (<span class="name">conf</span> UI-FILTER-PARAMS)&#125;]</span><br><span class="line">          https-port (<span class="name"><span class="builtin-name">if</span></span> (<span class="name">not-nil?</span> (<span class="name">conf</span> UI-HTTPS-PORT)) (<span class="name">conf</span> UI-HTTPS-PORT) <span class="number">0</span>)</span><br><span class="line">          https-ks-path (<span class="name">conf</span> UI-HTTPS-KEYSTORE-PATH)</span><br><span class="line">          https-ks-password (<span class="name">conf</span> UI-HTTPS-KEYSTORE-PASSWORD)</span><br><span class="line">          https-ks-type (<span class="name">conf</span> UI-HTTPS-KEYSTORE-TYPE)</span><br><span class="line">          https-key-password (<span class="name">conf</span> UI-HTTPS-KEY-PASSWORD)</span><br><span class="line">          https-ts-path (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-PATH)</span><br><span class="line">          https-ts-password (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-PASSWORD)</span><br><span class="line">          https-ts-type (<span class="name">conf</span> UI-HTTPS-TRUSTSTORE-TYPE)</span><br><span class="line">          https-want-client-auth (<span class="name">conf</span> UI-HTTPS-WANT-CLIENT-AUTH)</span><br><span class="line">          https-need-client-auth (<span class="name">conf</span> UI-HTTPS-NEED-CLIENT-AUTH)]</span><br><span class="line">      (<span class="name">storm-run-jetty</span> &#123;<span class="symbol">:port</span> (<span class="name">conf</span> UI-PORT)</span><br><span class="line">                        <span class="symbol">:host</span> (<span class="name">conf</span> UI-HOST)</span><br><span class="line">                        <span class="symbol">:https-port</span> https-port</span><br><span class="line">                        <span class="symbol">:configurator</span> (<span class="name"><span class="builtin-name">fn</span></span> [server]</span><br><span class="line">                                        (<span class="name">config-ssl</span> server</span><br><span class="line">                                                    https-port</span><br><span class="line">                                                    https-ks-path</span><br><span class="line">                                                    https-ks-password</span><br><span class="line">                                                    https-ks-type</span><br><span class="line">                                                    https-key-password</span><br><span class="line">                                                    https-ts-path</span><br><span class="line">                                                    https-ts-password</span><br><span class="line">                                                    https-ts-type</span><br><span class="line">                                                    https-need-client-auth</span><br><span class="line">                                                    https-want-client-auth)</span><br><span class="line">                                        (<span class="name"><span class="builtin-name">doseq</span></span> [connector (<span class="name">.getConnectors</span> server)]</span><br><span class="line">                                          (<span class="name">.setRequestHeaderSize</span> connector header-buffer-size))</span><br><span class="line">                                        (<span class="name">config-filter</span> server app filters-confs))&#125;))</span><br><span class="line">   (<span class="name">catch</span> Exception ex</span><br><span class="line">     (<span class="name">log-error</span> ex))))</span><br></pre></td></tr></table></figure></p>
 <p>首先从conf配置项中取出http的相应参数，然后将这些配置项封装为map作为参数去调用<strong>storm-run-jetty</strong>函数(helper.clj)，参数有:port，:host，:https-port，:configurator。storm-run-jetty函数定义如下：</p>
-<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;; Modified from ring.adapter.jetty 1.3.0</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn-</span></span> jetty-create-server</span><br><span class="line">  <span class="string">"Construct a Jetty Server instance."</span></span><br><span class="line">  [options]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [connector (<span class="name"><span class="builtin-name">doto</span></span> (<span class="name">SelectChannelConnector.</span>)</span><br><span class="line">                    (<span class="name">.setPort</span> (<span class="name">options</span> <span class="symbol">:port</span> <span class="number">80</span>))</span><br><span class="line">                    (<span class="name">.setHost</span> (<span class="name">options</span> <span class="symbol">:host</span>))</span><br><span class="line">                    (<span class="name">.setMaxIdleTime</span> (<span class="name">options</span> <span class="symbol">:max-idle-time</span> <span class="number">200000</span>)))</span><br><span class="line">        server    (<span class="name"><span class="builtin-name">doto</span></span> (<span class="name">Server.</span>)</span><br><span class="line">                    (<span class="name">.addConnector</span> connector)</span><br><span class="line">                    (<span class="name">.setSendDateHeader</span> <span class="literal">true</span>))</span><br><span class="line">        https-port (<span class="name">options</span> <span class="symbol">:https-port</span>)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">and</span></span> (<span class="name">not-nil?</span> https-port) (<span class="name"><span class="builtin-name">&gt;</span></span> https-port <span class="number">0</span>)) (<span class="name">remove-non-ssl-connectors</span> server))</span><br><span class="line">    server))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> storm-run-jetty</span><br><span class="line">  <span class="string">"Modified version of run-jetty</span><br><span class="line">  Assumes configurator sets handler."</span></span><br><span class="line">  [config]</span><br><span class="line">  &#123;<span class="symbol">:pre</span> [(<span class="symbol">:configurator</span> config)]&#125;</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [#<span class="comment">^Server</span> s (<span class="name">jetty-create-server</span> (<span class="name"><span class="builtin-name">dissoc</span></span> config <span class="symbol">:configurator</span>))</span><br><span class="line">        configurator (<span class="symbol">:configurator</span> config)]</span><br><span class="line">    (<span class="name">configurator</span> s)</span><br><span class="line">    (<span class="name">.start</span> s)))</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">;; Modified from ring.adapter.jetty 1.3.0</span><br><span class="line">(defn- jetty-create-server</span><br><span class="line">  "Construct a Jetty Server instance."</span><br><span class="line">  [options]</span><br><span class="line">  (let [connector (doto (SelectChannelConnector.)</span><br><span class="line">                    (.setPort (options :port 80))</span><br><span class="line">                    (.setHost (options :host))</span><br><span class="line">                    (.setMaxIdleTime (options :max-idle-time 200000)))</span><br><span class="line">        server    (doto (Server.)</span><br><span class="line">                    (.addConnector connector)</span><br><span class="line">                    (.setSendDateHeader true))</span><br><span class="line">        https-port (options :https-port)]</span><br><span class="line">    (if (and (not-nil? https-port) (&gt; https-port 0)) (remove-non-ssl-connectors server))</span><br><span class="line">    server))</span><br><span class="line"></span><br><span class="line">(defn storm-run-jetty</span><br><span class="line">  "Modified version of run-jetty</span><br><span class="line">  Assumes configurator sets handler."</span><br><span class="line">  [config]</span><br><span class="line">  &#123;:pre [(:configurator config)]&#125;</span><br><span class="line">  (let [#^Server s (jetty-create-server (dissoc config :configurator))</span><br><span class="line">        configurator (:configurator config)]</span><br><span class="line">    (configurator s)</span><br><span class="line">    (.start s)))</span><br></pre></td></tr></table></figure>
 <p><strong>storm-run-jetty的运行流程</strong>：</p>
 <ol>
 <li><p>传入参数为：:port，:host，:https-port，:configurator。 其中:configurator是在start-server!中定义的参数，返回的是如下的函数，该函数首先利用https的传入参数初始化一个ssl connector，并将其添加到server中。然后对server中的每一个connector，设置HTTP请求头的buffer size，设置server的过滤器，再设置server的handle为app，主要通过config-filter函数(helper.clj)实现。。</p>
@@ -308,15 +308,15 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 			
 		
 			
-				<li><a href="/tags/2015/" title="2015">2015<sup>1</sup></a></li>
+				<li><a href="/tags/ubuntu/" title="ubuntu">ubuntu<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Clojure/" title="Clojure">Clojure<sup>1</sup></a></li>
+				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/cursive/" title="cursive">cursive<sup>1</sup></a></li>
+				<li><a href="/tags/网易游戏/" title="网易游戏">网易游戏<sup>1</sup></a></li>
 			
 		
 			
@@ -324,23 +324,11 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 			
 		
 			
-				<li><a href="/tags/并行度/" title="并行度">并行度<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/kafka/" title="kafka">kafka<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+				<li><a href="/tags/worker/" title="worker">worker<sup>1</sup></a></li>
 			
 		
 			
@@ -352,19 +340,31 @@ storm提供了ui界面的Restful API，主要API如下，详细的API的参数�
 			
 		
 			
-				<li><a href="/tags/redhat/" title="redhat">redhat<sup>1</sup></a></li>
+				<li><a href="/tags/executor/" title="executor">executor<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/idea/" title="idea">idea<sup>1</sup></a></li>
+				<li><a href="/tags/LeetCode/" title="LeetCode">LeetCode<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/centos/" title="centos">centos<sup>1</sup></a></li>
+				<li><a href="/tags/算法/" title="算法">算法<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/ffmpeg/" title="ffmpeg">ffmpeg<sup>1</sup></a></li>
+				<li><a href="/tags/质数/" title="质数">质数<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015/" title="2015">2015<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/生活/" title="生活">生活<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/目标/" title="目标">目标<sup>1</sup></a></li>
 			
 		
 		</ul>
