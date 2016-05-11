@@ -2107,9 +2107,6 @@ footer {
   display: inline-block;
 }
 .cnzz {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: "covered_by_your_graceregular";
   width: 100%;
   color: #fff;
   text-align: center;
