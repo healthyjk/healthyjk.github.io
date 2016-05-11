@@ -736,13 +736,13 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="Linux配置" scheme="http://yanjiankang.cn/categories/Linux%E9%85%8D%E7%BD%AE/"/>
     
     
-      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
-    
       <category term="Linux" scheme="http://yanjiankang.cn/tags/Linux/"/>
     
       <category term="ubuntu" scheme="http://yanjiankang.cn/tags/ubuntu/"/>
     
       <category term="redhat" scheme="http://yanjiankang.cn/tags/redhat/"/>
+    
+      <category term="opencv" scheme="http://yanjiankang.cn/tags/opencv/"/>
     
   </entry>
   
@@ -837,17 +837,17 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="集群技术" scheme="http://yanjiankang.cn/categories/%E9%9B%86%E7%BE%A4%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="kafka" scheme="http://yanjiankang.cn/tags/kafka/"/>
-    
       <category term="storm" scheme="http://yanjiankang.cn/tags/storm/"/>
+    
+      <category term="java" scheme="http://yanjiankang.cn/tags/java/"/>
+    
+      <category term="kafka" scheme="http://yanjiankang.cn/tags/kafka/"/>
     
       <category term="zookeeper" scheme="http://yanjiankang.cn/tags/zookeeper/"/>
     
       <category term="producer" scheme="http://yanjiankang.cn/tags/producer/"/>
     
       <category term="consumer" scheme="http://yanjiankang.cn/tags/consumer/"/>
-    
-      <category term="java" scheme="http://yanjiankang.cn/tags/java/"/>
     
   </entry>
   
@@ -1008,11 +1008,11 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="软件工程" scheme="http://yanjiankang.cn/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/"/>
     
     
-      <category term="java" scheme="http://yanjiankang.cn/tags/java/"/>
-    
       <category term="actor模型" scheme="http://yanjiankang.cn/tags/actor%E6%A8%A1%E5%9E%8B/"/>
     
       <category term="并发" scheme="http://yanjiankang.cn/tags/%E5%B9%B6%E5%8F%91/"/>
+    
+      <category term="java" scheme="http://yanjiankang.cn/tags/java/"/>
     
       <category term="Scala" scheme="http://yanjiankang.cn/tags/Scala/"/>
     
