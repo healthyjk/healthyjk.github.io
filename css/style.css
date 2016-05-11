@@ -2106,6 +2106,19 @@ footer {
 .cc-license img {
   display: inline-block;
 }
+.cnzz {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "covered_by_your_graceregular";
+  width: 100%;
+  color: #fff;
+  text-align: center;
+}
+@media only screen and (min-width: 768px) {
+  .cnzz {
+    float: left;
+  }
+}
 .article-content pre,
 .article-content .highlight,
 .article-content .highlight pre {
