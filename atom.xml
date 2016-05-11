@@ -837,9 +837,9 @@ Awaiting WebSocket connections on ws://127.0.0.1:8084/
       <category term="集群技术" scheme="http://yanjiankang.cn/categories/%E9%9B%86%E7%BE%A4%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="storm" scheme="http://yanjiankang.cn/tags/storm/"/>
-    
       <category term="kafka" scheme="http://yanjiankang.cn/tags/kafka/"/>
+    
+      <category term="storm" scheme="http://yanjiankang.cn/tags/storm/"/>
     
       <category term="zookeeper" scheme="http://yanjiankang.cn/tags/zookeeper/"/>
     
